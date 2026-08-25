@@ -1,7 +1,7 @@
 """
 Configurações e constantes globais do jogo.
 """
-
+#d
 LARGURA = 800
 ALTURA = 600
 FPS = 60

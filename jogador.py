@@ -1,7 +1,7 @@
 """
 Classe do Jogador: controla movimento e vida.
 """
-
+# b
 import pygame
 
 from entidade import Entidade

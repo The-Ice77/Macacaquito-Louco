@@ -1,7 +1,7 @@
 """
 Ponto de entrada do jogo: inicializa a tela e roda o loop principal.
 """
-
+#c
 import random
 import pygame
 

@@ -1,7 +1,7 @@
 """
 Classe base para todos os objetos do jogo (jogador, tiros, robôs).
 """
-
+# a
 import pygame
 
 
