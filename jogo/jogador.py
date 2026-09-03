@@ -1,7 +1,6 @@
 """
 Classe do Jogador: controla movimento e vida.
 """
-# b
 import pygame
 
 from .entidade import Entidade
@@ -13,6 +12,7 @@ class Jogador(Entidade):
         super().__init__(x, y, 5)
         self.image.fill(COR_JOGADOR)
         self.vida = 5
+        pygame.draw.circle(self.image, (255, 220, 180), (20, 20), 8)
 
     def update(self):
         keys = pygame.key.get_pressed()

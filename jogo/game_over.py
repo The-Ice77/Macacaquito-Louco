@@ -5,7 +5,7 @@ import random
 import pygame
 from .settings import (
     LARGURA, ALTURA,
-    COR_MENU_FUNDO, COR_ROBO, COR_MENU_TEXTO,
+    COR_MENU_FUNDO, COR_GAME_OVER, COR_MENU_TEXTO,
     COR_MENU_DESTAQUE, COR_MENU_SOMBRA
 )
 
@@ -47,7 +47,7 @@ class GameOver:
             cor = (brilho, brilho // 4, brilho // 4)
             pygame.draw.circle(tela, cor, (int(p[0]), int(p[1])), p[3])
 
-        titulo = self.fonte_titulo.render("GAME OVER", True, COR_ROBO)
+        titulo = self.fonte_titulo.render("GAME OVER", True, COR_GAME_OVER)
         sombra = self.fonte_titulo.render("GAME OVER", True, COR_MENU_SOMBRA)
         tela.blit(sombra, (LARGURA // 2 - titulo.get_width() // 2 + 4, 134))
         tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 130))

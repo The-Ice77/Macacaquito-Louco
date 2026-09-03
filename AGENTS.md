@@ -49,8 +49,8 @@ A estrutura principal do projeto é:
     jogo/jogador.py
         Classe Jogador e lógica relacionada ao jogador.
 
-    jogo/robo.py
-        Classes relacionadas aos inimigos/robôs.
+    jogo/inimigo.py
+        Classes relacionadas aos inimigos (forças policiais).
 
     jogo/tiro.py
         Classe relacionada aos projéteis.
@@ -139,16 +139,15 @@ Não apagar funcionalidades existentes apenas para simplificar a implementação
 
 O jogo atualmente possui:
 
-- jogador controlável;
+- jogador controlável (macaco em avião de bananas);
 - movimentação WASD;
-- disparo com Espaço;
-- inimigos robôs;
-- inimigo RoboZigueZague;
-- projéteis;
+- disparo com Espaço (bananas);
+- inimigos: Guarda, Helicóptero Policial, Viatura Rápida, Guarda Pesado, Chefe Final;
+- projéteis (jogador e inimigos);
 - colisões;
 - sistema de vida;
 - pontuação;
-- spawn de inimigos;
+- spawn de inimigos por pesos;
 - game loop;
 - HUD;
 - menu inicial;
@@ -158,7 +157,6 @@ O jogo atualmente possui:
 
 Funcionalidades futuras podem incluir:
 
-- diferentes tipos de inimigos;
 - power-ups;
 - sons;
 - música;
