@@ -2,8 +2,8 @@
 Classe base Robo e suas variações (inimigos).
 """
 #ryyt
-from entidade import Entidade
-from settings import LARGURA, ALTURA, COR_ROBO
+from .entidade import Entidade
+from .settings import LARGURA, ALTURA, COR_ROBO
 
 
 class Robo(Entidade):

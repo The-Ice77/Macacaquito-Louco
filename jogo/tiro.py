@@ -2,8 +2,8 @@
 Classe do Tiro disparado pelo jogador.
 """
 #e
-from entidade import Entidade
-from settings import COR_TIRO
+from .entidade import Entidade
+from .settings import COR_TIRO
 
 
 class Tiro(Entidade):

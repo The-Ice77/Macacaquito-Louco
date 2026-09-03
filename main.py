@@ -1,80 +1,50 @@
 """
-Ponto de entrada do jogo: inicializa a tela e roda o loop principal.
+Ponto de entrada do jogo: verifica dependências, cria a tela e inicia o jogo.
 """
-#c
-import random
-import pygame
+import sys
+import subprocess
 
-from settings import LARGURA, ALTURA, FPS, COR_FUNDO, COR_TEXTO
-from jogador import Jogador
-from tiro import Tiro
-from robo import RoboZigueZague
+
+def verificar_dependencias():
+    try:
+        import pygame
+        return True
+    except ImportError:
+        print("Pygame nao encontrado. Instalando...")
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            print("Dependencias instaladas com sucesso!")
+            subprocess.Popen([sys.executable] + sys.argv)
+            sys.exit()
+        except Exception as e:
+            print(f"Erro ao instalar dependencias: {e}")
+            print("Execute manualmente: pip install -r requirements.txt")
+            return False
 
 
 def main():
-    pygame.init()
+    if not verificar_dependencias():
+        sys.exit(1)
 
-    tela = pygame.display.set_mode((LARGURA, ALTURA))
-    pygame.display.set_caption("Robot Defense - Template")
+    import pygame
+    from jogo.settings import LARGURA, ALTURA
+    from jogo.aplicacao import Jogo
 
-    clock = pygame.time.Clock()
-    font = pygame.font.SysFont(None, 30)
+    try:
+        pygame.init()
+        tela = pygame.display.set_mode((LARGURA, ALTURA))
+        pygame.display.set_caption("Macacuquito Louco")
+    except Exception as e:
+        print(f"Erro ao iniciar o jogo: {e}")
+        pygame.quit()
+        return
 
-    todos_sprites = pygame.sprite.Group()
-    inimigos = pygame.sprite.Group()
-    tiros = pygame.sprite.Group()
-
-    jogador = Jogador(LARGURA // 2, ALTURA - 60)
-    todos_sprites.add(jogador)
-
-    pontos = 0
-    spawn_timer = 0
-
-    rodando = True
-    while rodando:
-        clock.tick(FPS)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                rodando = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    tiro = Tiro(jogador.rect.centerx, jogador.rect.y)
-                    todos_sprites.add(tiro)
-                    tiros.add(tiro)
-
-        # timer de entrada dos inimigos
-        spawn_timer += 1
-        if spawn_timer > 40:
-            robo = RoboZigueZague(random.randint(40, LARGURA - 40), -40)
-            todos_sprites.add(robo)
-            inimigos.add(robo)
-            spawn_timer = 0
-
-        # colisão tiro x robô
-        colisao = pygame.sprite.groupcollide(inimigos, tiros, True, True)
-        pontos += len(colisao)
-
-        # colisão robô x jogador
-        if pygame.sprite.spritecollide(jogador, inimigos, True):
-            jogador.vida -= 1
-            if jogador.vida <= 0:
-                print("GAME OVER!")
-                rodando = False
-
-        # atualizar
-        todos_sprites.update()
-
-        # desenhar
-        tela.fill(COR_FUNDO)
-        todos_sprites.draw(tela)
-
-        # Painel de pontos e vida
-        texto = font.render(f"Vida: {jogador.vida}  |  Pontos: {pontos}", True, COR_TEXTO)
-        tela.blit(texto, (10, 10))
-
-        pygame.display.flip()
+    jogo = Jogo(tela)
+    jogo.executar()
 
     pygame.quit()
 

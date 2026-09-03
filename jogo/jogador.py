@@ -4,8 +4,8 @@ Classe do Jogador: controla movimento e vida.
 # b
 import pygame
 
-from entidade import Entidade
-from settings import LARGURA, ALTURA, COR_JOGADOR
+from .entidade import Entidade
+from .settings import LARGURA, ALTURA, COR_JOGADOR
 
 
 class Jogador(Entidade):
