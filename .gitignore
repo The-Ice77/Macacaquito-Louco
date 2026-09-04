@@ -1,0 +1,9 @@
+.vscode/
+.gitignore
+*.pyc
+.venv/
+.venv
+__pycache__/
+.idea/
+.opencode/
+robot_defense.zip

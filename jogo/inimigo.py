@@ -4,6 +4,7 @@ Classes de inimigos: forças policiais que perseguem o protagonista.
 Usa classe abstrata para garantir o método de movimentação em cada inimigo.
 """
 from abc import ABC, abstractmethod
+import math
 import random
 
 import pygame
@@ -11,23 +12,31 @@ import pygame
 from .entidade import Entidade
 from .settings import (
     LARGURA, ALTURA,
-    COR_GUARDA, COR_HELICOPTERO, COR_VIATURA, COR_PROJETIL_INIMIGO,
-    COR_GUARDAPESADO, COR_CHEFE, COR_CHEFE_FASE2, COR_PROJETIL_FORTE,
+    COR_GUARDA, COR_HELICOPTERO, COR_VIATURA,
+    COR_GUARDAPESADO, COR_CHEFE, COR_CHEFE_FASE2,
     VIDA_GUARDA, PONTOS_GUARDA, VELOCIDADE_GUARDA,
     VIDA_HELICOPTERO, PONTOS_HELICOPTERO, VELOCIDADE_HELICOPTERO,
     VIDA_VIATURA, PONTOS_VIATURA, VELOCIDADE_VIATURA,
     VIDA_GUARDAPESADO, PONTOS_GUARDAPESADO, VELOCIDADE_GUARDAPESADO,
     VIDA_CHEFE, PONTOS_CHEFE, VELOCIDADE_CHEFE,
+    VEL_BALA, VEL_BALA_TAMANHO, COR_BALA,
+    VEL_MISSIL, VEL_MISSIL_TAMANHO, COR_MISSIL,
+    PERSECUCAO_HELICOPTERO, RAIO_EXPLOSAO_MISSIL, COR_EXPLOSAO_MISSIL,
+    VEL_RAJADA, VEL_RAJADA_TAMANHO, COR_RAJADA,
+    QTD_RAJADA_VIATURA, INTERVALO_RAJADA, FREQ_RAJADA_VIATURA,
+    VEL_BOMBA, VEL_BOMBA_TAMANHO, COR_BOMBA,
+    RAIO_EXPLOSAO_BOMBA, COR_EXPLOSAO_BOMBA, INTERVALO_BOMBA,
+    VEL_MISSIL_BOSS, VEL_MISSIL_BOSS_TAMANHO, COR_MISSIL_BOSS,
+    PERSECUCAO_BOSS, RAIO_EXPLOSAO_MISSIL_BOSS, COR_EXPLOSAO_MISSIL_BOSS,
+    INTERVALO_TIRO_BOSS_FASE1,
+    VEL_LEQUE, VEL_LEQUE_TAMANHO, COR_LEQUE, QTD_LEQUE_BOSS,
+    INTERVALO_LEQUE_BOSS,
+    VEL_BOMBA_BOSS, VEL_BOMBA_BOSS_TAMANHO, COR_BOMBA_BOSS,
+    RAIO_EXPLOSAO_BOMBA_BOSS, COR_EXPLOSAO_BOMBA_BOSS,
+    INTERVALO_BOMBA_BOSS,
+    LINHA_EXPLOSAO_BOMBA,
 )
-
-
-def criar_tiro_inimigo(x, y, cor=None):
-    """Cria um projétil que desce (disparado por inimigos)."""
-    from .tiro import Tiro
-    try:
-        return Tiro(x, y, direcao=-1, cor=cor)
-    except Exception:
-        return None
+from .tiro import Tiro, direcao_para
 
 
 class Inimigo(Entidade, ABC):
@@ -40,8 +49,10 @@ class Inimigo(Entidade, ABC):
         self.vida = vida
         self.pontos = pontos
         self.cor = cor
-        self._desenhar()
         self.tiros_inimigos = None
+        self.explosoes = None
+        self.todos_sprites = None
+        self._desenhar()
 
     @abstractmethod
     def _movimentar(self):
@@ -64,20 +75,27 @@ class Inimigo(Entidade, ABC):
                 self.rect.left > LARGURA + margem):
             self.kill()
 
+    def _registrar_tiro(self, tiro):
+        """Adiciona um projétil aos grupos corretos para desenho e colisão."""
+        if self.tiros_inimigos is not None:
+            self.tiros_inimigos.add(tiro)
+        if self.todos_sprites is not None:
+            self.todos_sprites.add(tiro)
+
     def update(self):
         self._movimentar()
         self.saiu_da_tela()
 
 
 class Guarda(Inimigo):
-    """Inimigo básico que desce em direção ao jogador e dispara."""
+    """Inimigo básico que desce e dispara uma bala simples."""
 
     def __init__(self, x, y, referencia_jogador):
         super().__init__(x, y, VELOCIDADE_GUARDA, VIDA_GUARDA,
                          PONTOS_GUARDA, COR_GUARDA)
         self.jogador = referencia_jogador
         self.timer_tiro = 0
-        self.intervalo_tiro = 70
+        self.intervalo_tiro = 60
 
     def _movimentar(self):
         self.rect.y += self.velocidade
@@ -94,11 +112,10 @@ class Guarda(Inimigo):
                          (14, 2, 12, 8))
 
     def atirar(self):
-        if self.tiros_inimigos is None:
-            return
-        tiro = criar_tiro_inimigo(self.rect.centerx, self.rect.bottom)
-        if tiro:
-            self.tiros_inimigos.add(tiro)
+        # bala simples: pequena, rápida, reta para baixo
+        tiro = Tiro(self.rect.centerx, self.rect.bottom,
+                    0, VEL_BALA, cor=COR_BALA, tamanho=VEL_BALA_TAMANHO)
+        self._registrar_tiro(tiro)
 
     def update(self):
         self._movimentar()
@@ -110,14 +127,14 @@ class Guarda(Inimigo):
 
 
 class HelicopteroPolicial(Inimigo):
-    """Inimigo intermediário que acompanha o X do jogador e dispara."""
+    """Inimigo intermediário que dispara um míssil mirado no jogador."""
 
     def __init__(self, x, y, referencia_jogador):
         super().__init__(x, y, VELOCIDADE_HELICOPTERO, VIDA_HELICOPTERO,
                          PONTOS_HELICOPTERO, COR_HELICOPTERO, tamanho=50)
         self.jogador = referencia_jogador
         self.timer_tiro = 0
-        self.intervalo_tiro = 50
+        self.intervalo_tiro = 100
 
     def _movimentar(self):
         self.rect.y += self.velocidade
@@ -134,12 +151,24 @@ class HelicopteroPolicial(Inimigo):
         pygame.draw.rect(self.image, (220, 220, 220), (10, 2, 30, 4))
 
     def atirar(self):
-        if self.tiros_inimigos is None:
-            return None
-        tiro = criar_tiro_inimigo(self.rect.centerx, self.rect.bottom)
-        if tiro:
-            self.tiros_inimigos.add(tiro)
-        return tiro
+        # míssil mirado na posição atual do jogador, com leve correção
+        if self.jogador is None:
+            return
+        dx, dy = direcao_para(
+            self.rect.centerx, self.rect.bottom,
+            self.jogador.rect.centerx, self.jogador.rect.centery,
+        )
+        tiro = Tiro(
+            self.rect.centerx, self.rect.bottom,
+            dx * VEL_MISSIL, dy * VEL_MISSIL,
+            cor=COR_MISSIL, tamanho=VEL_MISSIL_TAMANHO,
+            homing=self.jogador, velo_perseguicao=PERSECUCAO_HELICOPTERO,
+            raio_explosao=RAIO_EXPLOSAO_MISSIL,
+            cor_explosao=COR_EXPLOSAO_MISSIL,
+        )
+        tiro.todos_sprites = self.todos_sprites
+        tiro.explosoes = self.explosoes
+        self._registrar_tiro(tiro)
 
     def update(self):
         self._movimentar()
@@ -151,12 +180,15 @@ class HelicopteroPolicial(Inimigo):
 
 
 class ViaturaRapida(Inimigo):
-    """Inimigo veloz que atravessa a tela rapidamente pelas laterais."""
+    """Inimigo veloz que atravessa a tela e dispara uma rajada de balas."""
 
     def __init__(self, x, y, direcao):
         super().__init__(x, y, VELOCIDADE_VIATURA, VIDA_VIATURA,
                          PONTOS_VIATURA, COR_VIATURA, tamanho=35)
         self.velocidade_x = direcao * VELOCIDADE_VIATURA
+        self.timer_rajada = 0
+        self.tiros_rajada = 0
+        self.intervalo_rajada = 50
 
     def _movimentar(self):
         self.rect.x += self.velocidade_x
@@ -167,16 +199,38 @@ class ViaturaRapida(Inimigo):
         pygame.draw.rect(self.image, (255, 255, 255), (0, 0, 35, 5))
         pygame.draw.rect(self.image, (255, 255, 255), (0, 30, 35, 5))
 
+    def _disparar_bala(self):
+        tiro = Tiro(self.rect.centerx, self.rect.bottom,
+                    0, VEL_RAJADA, cor=COR_RAJADA,
+                    tamanho=VEL_RAJADA_TAMANHO)
+        self._registrar_tiro(tiro)
+
+    def _iniciar_rajada(self):
+        self.tiros_rajada = QTD_RAJADA_VIATURA
+
+    def update(self):
+        self._movimentar()
+        self.saiu_da_tela()
+        self.timer_rajada += 1
+        if self.tiros_rajada > 0:
+            if self.timer_rajada >= INTERVALO_RAJADA:
+                self._disparar_bala()
+                self.tiros_rajada -= 1
+                self.timer_rajada = 0
+        elif self.timer_rajada >= self.intervalo_rajada:
+            self._iniciar_rajada()
+            self.timer_rajada = 0
+
 
 class GuardaPesado(Inimigo):
-    """Inimigo raro, lento e resistente, com ataque mais forte."""
+    """Inimigo raro e lento que dispara uma bomba explosiva grande."""
 
     def __init__(self, x, y, referencia_jogador):
         super().__init__(x, y, VELOCIDADE_GUARDAPESADO, VIDA_GUARDAPESADO,
                          PONTOS_GUARDAPESADO, COR_GUARDAPESADO, tamanho=50)
         self.jogador = referencia_jogador
         self.timer_tiro = 0
-        self.intervalo_tiro = 90
+        self.intervalo_tiro = INTERVALO_BOMBA
 
     def _movimentar(self):
         self.rect.y += self.velocidade
@@ -192,13 +246,17 @@ class GuardaPesado(Inimigo):
         pygame.draw.rect(self.image, (255, 255, 255), (10, 2, 30, 12))
 
     def atirar(self):
-        if self.tiros_inimigos is None:
-            return
-        tiro = criar_tiro_inimigo(
-            self.rect.centerx, self.rect.bottom, COR_PROJETIL_FORTE
-        )
-        if tiro:
-            self.tiros_inimigos.add(tiro)
+        # bomba lenta, grande, explode ao tocar o jogador ou na base
+        tiro = Tiro(self.rect.centerx, self.rect.bottom,
+                    0, VEL_BOMBA, cor=COR_BOMBA,
+                    tamanho=VEL_BOMBA_TAMANHO,
+                    homing=self.jogador,
+                    raio_explosao=RAIO_EXPLOSAO_BOMBA,
+                    cor_explosao=COR_EXPLOSAO_BOMBA,
+                    explodir_na_linha=LINHA_EXPLOSAO_BOMBA)
+        tiro.todos_sprites = self.todos_sprites
+        tiro.explosoes = self.explosoes
+        self._registrar_tiro(tiro)
 
     def update(self):
         self._movimentar()
@@ -219,11 +277,15 @@ class ChefeFinal(Inimigo):
         self.jogador = referencia_jogador
         self.direcao = 1
         self.timer_tiro = 0
-        self.intervalo_tiro = 40
-        self.timer_chamada = 0
-        self.intervalo_chamada = 150
+        self.intervalo_tiro = INTERVALO_TIRO_BOSS_FASE1
         self.grupo_inimigos = None
         self.metade_vida = VIDA_CHEFE / 2
+        # timers dos padrões específicos da fase 2
+        self.timer_leque = 0
+        self.intervalo_leque = INTERVALO_LEQUE_BOSS
+        self.timer_bomba = 0
+        self.intervalo_bomba = INTERVALO_BOMBA_BOSS
+        self.timer_chamada = 0
 
     def _movimentar(self):
         self.rect.x += self.direcao * self.velocidade
@@ -233,34 +295,60 @@ class ChefeFinal(Inimigo):
     def _desenhar(self):
         cor = COR_CHEFE_FASE2 if self.esta_na_fase2 else self.cor
         self.image.fill(cor)
-        # corpo ruivo (círculo central)
         pygame.draw.circle(self.image, (0, 0, 0), (35, 40), 16, 2)
-        # "cabelos" ruivos e charme cartunesco
         pygame.draw.rect(self.image, (120, 40, 20), (25, 8, 20, 10))
 
     def entrar_fase2(self):
         if not self.esta_na_fase2:
             self.esta_na_fase2 = True
             self.velocidade = self.velocidade + 2
-            self.intervalo_tiro = 25
+            self.intervalo_tiro = 35
             self._desenhar()
 
-    def atirar(self):
-        if self.tiros_inimigos is None:
+    def _novo_tiro(self, tiro):
+        tiro.todos_sprites = self.todos_sprites
+        tiro.explosoes = self.explosoes
+        self._registrar_tiro(tiro)
+
+    def _atacar_fase1(self):
+        # tiro direcionado no jogador (míssil especial, leve correção)
+        if self.jogador is None:
             return
-        x = self.rect.centerx
-        y = self.rect.bottom
-        if self.esta_na_fase2:
-            # barragem de projéteis fortes em paralelo na fase 2
-            for dx in (-30, 0, 30):
-                tiro = criar_tiro_inimigo(x + dx, y, COR_PROJETIL_FORTE)
-                if tiro:
-                    self.tiros_inimigos.add(tiro)
-        else:
-            for dx in (-15, 15):
-                tiro = criar_tiro_inimigo(x + dx, y)
-                if tiro:
-                    self.tiros_inimigos.add(tiro)
+        dx, dy = direcao_para(
+            self.rect.centerx, self.rect.bottom,
+            self.jogador.rect.centerx, self.jogador.rect.centery,
+        )
+        tiro = Tiro(
+            self.rect.centerx, self.rect.bottom,
+            dx * VEL_MISSIL_BOSS, dy * VEL_MISSIL_BOSS,
+            cor=COR_MISSIL_BOSS, tamanho=VEL_MISSIL_BOSS_TAMANHO,
+            homing=self.jogador, velo_perseguicao=PERSECUCAO_BOSS,
+            raio_explosao=RAIO_EXPLOSAO_MISSIL_BOSS,
+            cor_explosao=COR_EXPLOSAO_MISSIL_BOSS,
+        )
+        self._novo_tiro(tiro)
+
+    def _leque(self):
+        # 5 projéteis em ângulos diferentes, sem perseguição
+        inicio = -2 if QTD_LEQUE_BOSS % 2 == 0 else -(QTD_LEQUE_BOSS // 2)
+        for i in range(QTD_LEQUE_BOSS):
+            angulo = math.radians(inicio + i)
+            vx = math.sin(angulo) * VEL_LEQUE
+            vy = math.cos(angulo) * VEL_LEQUE
+            tiro = Tiro(self.rect.centerx, self.rect.bottom,
+                        vx, vy, cor=COR_LEQUE,
+                        tamanho=VEL_LEQUE_TAMANHO)
+            self._novo_tiro(tiro)
+
+    def _bomba_especial(self):
+        tiro = Tiro(self.rect.centerx, self.rect.bottom,
+                    0, VEL_BOMBA_BOSS, cor=COR_BOMBA_BOSS,
+                    tamanho=VEL_BOMBA_BOSS_TAMANHO,
+                    homing=self.jogador,
+                    raio_explosao=RAIO_EXPLOSAO_BOMBA_BOSS,
+                    cor_explosao=COR_EXPLOSAO_BOMBA_BOSS,
+                    explodir_na_linha=LINHA_EXPLOSAO_BOMBA)
+        self._novo_tiro(tiro)
 
     def chamar_guardas(self):
         if self.grupo_inimigos is None:
@@ -279,13 +367,22 @@ class ChefeFinal(Inimigo):
 
         self.timer_tiro += 1
         if self.timer_tiro >= self.intervalo_tiro:
-            self.atirar()
+            self._atacar_fase1()
             self.timer_tiro = 0
 
-        # fase 2: chama inimigos menores periodicamente
         if self.esta_na_fase2:
+            # leque
+            self.timer_leque += 1
+            if self.timer_leque >= self.intervalo_leque:
+                self._leque()
+                self.timer_leque = 0
+            # bomba especial
+            self.timer_bomba += 1
+            if self.timer_bomba >= self.intervalo_bomba:
+                self._bomba_especial()
+                self.timer_bomba = 0
+            # convocação de inimigos menores
             self.timer_chamada += 1
-            if self.timer_chamada >= self.intervalo_chamada:
+            if self.timer_chamada >= 300:
                 self.chamar_guardas()
                 self.timer_chamada = 0
-

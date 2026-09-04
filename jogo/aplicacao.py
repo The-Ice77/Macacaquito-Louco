@@ -9,7 +9,7 @@ from .settings import (
     PONTOS_DESBLOQUEIA_GUARDAPESADO, PONTOS_DESBLOQUEIA_CHEFE,
 )
 from .jogador import Jogador
-from .tiro import Tiro
+from .tiro import TiroJogador
 from .inimigo import (
     Guarda, HelicopteroPolicial, ViaturaRapida,
     GuardaPesado, ChefeFinal,
@@ -32,6 +32,7 @@ class Jogo:
         self.inimigos = pygame.sprite.Group()
         self.tiros = pygame.sprite.Group()
         self.tiros_inimigos = pygame.sprite.Group()
+        self.explosoes = pygame.sprite.Group()
 
         self.jogador = self.criar_jogador()
         self.todos_sprites.add(self.jogador)
@@ -55,6 +56,7 @@ class Jogo:
         self.inimigos.empty()
         self.tiros.empty()
         self.tiros_inimigos.empty()
+        self.explosoes.empty()
         self.jogador = self.criar_jogador()
         self.todos_sprites.add(self.jogador)
         self.chefe = None
@@ -98,6 +100,8 @@ class Jogo:
                              self.jogador)
 
         inimigo.tiros_inimigos = self.tiros_inimigos
+        inimigo.explosoes = self.explosoes
+        inimigo.todos_sprites = self.todos_sprites
         self.todos_sprites.add(inimigo)
         self.inimigos.add(inimigo)
 
@@ -107,6 +111,8 @@ class Jogo:
             chefe = ChefeFinal(random.randint(100, LARGURA - 100),
                                self.jogador)
             chefe.tiros_inimigos = self.tiros_inimigos
+            chefe.explosoes = self.explosoes
+            chefe.todos_sprites = self.todos_sprites
             chefe.grupo_inimigos = self.inimigos
             self.todos_sprites.add(chefe)
             self.inimigos.add(chefe)
@@ -138,24 +144,40 @@ class Jogo:
             elif self.estado == "jogando":
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        try:
-                            tiro = Tiro(
-                                self.jogador.rect.centerx,
-                                self.jogador.rect.y,
-                                direcao=1
-                            )
-                            self.todos_sprites.add(tiro)
-                            self.tiros.add(tiro)
-                        except Exception:
-                            pass
+                        tiro = TiroJogador(
+                            self.jogador.rect.centerx,
+                            self.jogador.rect.y
+                        )
+                        self.todos_sprites.add(tiro)
+                        self.tiros.add(tiro)
 
     def _deduzir_vida(self):
         """Reduz a vida do jogador (danos acumulados) e checa game over."""
         dano = 0
-        if pygame.sprite.spritecollide(self.jogador, self.tiros_inimigos, True):
-            dano += 1
+
+        # Projéteis não explosivos: dano direto ao tocar o jogador.
+        for tiro in list(self.tiros_inimigos):
+            if tiro.raio_explosao > 0:
+                continue
+            if pygame.sprite.collide_rect(self.jogador, tiro):
+                dano += 1
+                tiro.kill()
+
+        # Projéteis explosivos: ao atingir o jogador, explodem (a explosão
+        # causa o dano, uma única vez).
+        for tiro in list(self.tiros_inimigos):
+            if tiro.raio_explosao <= 0:
+                continue
+            if pygame.sprite.collide_rect(self.jogador, tiro):
+                tiro.explodir()
+
+        # Colisão com o corpo dos inimigos.
         if pygame.sprite.spritecollide(self.jogador, self.inimigos, True):
             dano += 1
+
+        # Dano de área das explosões (cada explosão danifica uma única vez).
+        for explosao in list(self.explosoes):
+            dano += explosao.aplicar_dano_se_no_alcance()
 
         if dano > 0:
             self.jogador.vida -= dano
@@ -176,8 +198,8 @@ class Jogo:
             self.inimigos, self.tiros, False, True
         )
         for inimigo, tiros in acertos.items():
-            for tiro in tiros:
-                inimigo.tomar_dano(tiro.velocidade)
+            for _tiro in tiros:
+                inimigo.tomar_dano(1)
             if not inimigo.alive():
                 self.pontos += getattr(inimigo, "pontos", 1)
 

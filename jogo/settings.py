@@ -6,6 +6,9 @@ LARGURA = 800
 ALTURA = 600
 FPS = 60
 
+# Margem de remoção de projéteis fora da tela
+MARGEM_SAIDA_PROJETIL = 40
+
 # Cores (R, G, B)
 COR_FUNDO = (20, 20, 20)
 COR_TEXTO = (255, 255, 255)
@@ -47,6 +50,65 @@ VELOCIDADE_CHEFE = 3
 # Limiares de pontuação (rebalanceáveis)
 PONTOS_DESBLOQUEIA_GUARDAPESADO = 1200
 PONTOS_DESBLOQUEIA_CHEFE = 2000
+
+# ============================================================
+# Projéteis dos inimigos
+# ============================================================
+# Guarda -> bala simples (pequena, rápida, reta para baixo)
+VEL_BALA_TAMANHO = 8
+VEL_BALA = 9
+COR_BALA = (255, 230, 150)
+
+# Helicóptero -> míssil (médio, mirado, pequena explosão)
+VEL_MISSIL_TAMANHO = 14
+VEL_MISSIL = 6
+COR_MISSIL = (255, 120, 60)
+PERSECUCAO_HELICOPTERO = 0.04          # correção leve (não persegue perfeito)
+RAIO_EXPLOSAO_MISSIL = 26
+COR_EXPLOSAO_MISSIL = (255, 180, 60)
+
+# Aeronave rápida -> rajada de 2-3 balas muito rápidas
+VEL_RAJADA_TAMANHO = 7
+VEL_RAJADA = 11
+COR_RAJADA = (120, 200, 255)
+QTD_RAJADA_VIATURA = 3
+INTERVALO_RAJADA = 8                   # frames entre projéteis da rajada
+FREQ_RAJADA_VIATURA = 50
+
+# Guarda pesado -> bomba explosiva (grande, lenta, grande explosão)
+VEL_BOMBA_TAMANHO = 24
+VEL_BOMBA = 3
+COR_BOMBA = (80, 80, 80)
+RAIO_EXPLOSAO_BOMBA = 55
+COR_EXPLOSAO_BOMBA = (255, 120, 0)
+INTERVALO_BOMBA = 110                  # cadência da bomba
+
+# Boss -> míssil especial (fase 1)
+VEL_MISSIL_BOSS_TAMANHO = 16
+VEL_MISSIL_BOSS = 6
+COR_MISSIL_BOSS = (255, 80, 200)
+PERSECUCAO_BOSS = 0.05
+RAIO_EXPLOSAO_MISSIL_BOSS = 30
+COR_EXPLOSAO_MISSIL_BOSS = (255, 80, 200)
+INTERVALO_TIRO_BOSS_FASE1 = 50
+
+# Boss -> leque de 5 projéteis (fase 2)
+VEL_LEQUE_TAMANHO = 9
+VEL_LEQUE = 8
+COR_LEQUE = (255, 220, 60)
+QTD_LEQUE_BOSS = 5
+INTERVALO_LEQUE_BOSS = 70
+
+# Boss -> bomba especial (fase 2, muito lenta, explosão maior)
+VEL_BOMBA_BOSS_TAMANHO = 32
+VEL_BOMBA_BOSS = 2
+COR_BOMBA_BOSS = (40, 40, 40)
+RAIO_EXPLOSAO_BOMBA_BOSS = 80
+COR_EXPLOSAO_BOMBA_BOSS = (255, 0, 0)
+INTERVALO_BOMBA_BOSS = 160
+
+# A bomba explode ao atingir a base (region where the player navigates)
+LINHA_EXPLOSAO_BOMBA = 520
 
 # Cores para menus
 COR_MENU_FUNDO = (10, 10, 30)
