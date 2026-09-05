@@ -2,6 +2,8 @@
 
 ## Data: 03/09/2026
 
+> Última atualização: 05/09/2026
+
 ---
 
 ## Etapas Concluídas
@@ -128,13 +130,17 @@ jogo/
 | `main.py` | Ponto de entrada, dependências, inicialização |
 | `jogo/__init__.py` | Marca o pacote `jogo` |
 | `jogo/settings.py` | Configurações e constantes |
-| `jogo/entidade.py` | Classe base para sprites |
-| `jogo/jogador.py` | Classe do jogador |
-| `jogo/robo.py` | Classes de inimigos |
-| `jogo/tiro.py` | Classe dos projéteis |
-| `jogo/menu.py` | Tela inicial |
-| `jogo/game_over.py` | Tela de game over |
-| `jogo/aplicacao.py` | Classe Jogo: game loop e estados |
+| `jogo/entidades/entidade.py` | Classe base para sprites |
+| `jogo/entidades/jogador.py` | Classe do jogador |
+| `jogo/entidades/inimigo.py` | Classes de inimigos |
+| `jogo/entidades/tiro.py` | Classes dos projéteis e explosões |
+| `jogo/entidades/powerup.py` | Classes de power-ups |
+| `jogo/telas/aplicacao.py` | Classe Jogo: game loop e estados |
+| `jogo/telas/menu.py` | Tela inicial |
+| `jogo/telas/game_over.py` | Tela de game over |
+| `jogo/visual/bg_fase.py` | Background da gameplay (cidade) |
+| `jogo/visual/tema.py` | Tema de selva dos menus |
+| `jogo/visual/efeito.py` | Efeitos visuais (partículas etc.) |
 | `requirements.txt` | Dependências |
 | `relatorio.md` | Este relatório |
 
@@ -261,12 +267,80 @@ assets. Protagonista: macaco em avião de bananas.
 
 ---
 
+## Etapa 11: Power-ups
+
+**Arquivos:** `jogo/entidades/powerup.py`, `jogo/telas/aplicacao.py`, `jogo/settings.py`
+
+- Bananas especiais caem do topo e são coletadas ao tocar o jogador.
+- Tipos: **Turbo** (velocidade ×1,5), **Tiro Duplo** (2 projéteis),
+  **Escudo** (absorve dano), **Mega Tiro** (dano 3), **Coração**
+  (recupera 1 vida) e **Estrela** (pontos bônus).
+- Spawn ocasional com intervalo variável e limite de 3 power-ups
+  simultâneos na tela (`POWERUP_MAX_NA_TELA`).
+- Efeitos temporários controlados por timers no `Jogador`, com
+  indicador dos efeitos ativos no HUD.
+- Durações configuráveis em `settings.py` (`POWERUP_DURACAO_*`).
+
+---
+
+## Etapa 12: Efeitos visuais e tema de selva
+
+**Arquivos:** `jogo/visual/efeito.py`, `jogo/visual/tema.py`,
+`jogo/telas/menu.py`, `jogo/telas/game_over.py`
+
+- **Efeitos** (`efeito.py`): partículas de fragmentos e coleta, flashes
+  de impacto, explosões com dano de área e linhas de velocidade no turbo.
+- **Tema de selva** (`tema.py`): moldura tropical com folhas, cipós,
+  bananas e botões em placas de madeira, reutilizada por Menu e GameOver.
+- Menu e GameOver passam a ter botões clicáveis (hover com mouse) além
+  do teclado (ENTER/ESC).
+
+---
+
+## Etapa 13: Background da gameplay (cidade)
+
+**Arquivo:** `jogo/visual/bg_fase.py` (+ cores em `jogo/settings.py`)
+
+- Cidade procedural (estilo Nova York) vista de cima, gerada em um tile
+  que se repete verticalmente com rolagem contínua.
+- Rolagem para baixo transmite vôo para a frente (sem efeito de "ré").
+- Desfoque (downscale/upscale) e nuvens ocasionais dão sensação de
+  altitude variável.
+- Camada visual secundária: paleta escura e dessaturada, poucos detalhes
+  e carros discretos, para não competir com inimigos e projéteis.
+
+---
+
+## Etapa 14: Reorganização do pacote `jogo/` em subpacotes
+
+Continua a organização iniciada na Etapa 9, agora separando
+responsabilidades em três subpacotes:
+
+```
+jogo/
+  settings.py        # Configurações e constantes
+  entidades/         # entidade, jogador, inimigo, tiro, powerup
+  telas/             # aplicacao, menu, game_over
+  visual/            # bg_fase, tema, efeito
+```
+
+- Todos os imports relativos foram atualizados; `main.py` agora
+  importa de `jogo.telas.aplicacao`.
+- Separa as camadas: entidades do jogo, telas/estados e visual
+  (cenário, tema e efeitos).
+- Cada subpacote possui seu próprio `__init__.py`.
+
+---
+
 ## Etapa 11+ (Próximos Passos)
 
 - [x] Diferentes tipos de inimigos (básicos da Etapa A)
 - [x] GuardaPesado (inimigo raro e resistente)
 - [x] ChefeFinal (com fases e chamada de inimigos)
-- [ ] Power-ups
+- [x] Power-ups (Etapa 11)
+- [x] Efeitos visuais e tema de selva (Etapa 12)
+- [x] Background da gameplay (Etapa 13)
+- [x] Reorganização em subpacotes (Etapa 14)
 - [ ] Sons e música
 - [ ] Melhorias visuais com sprites
 - [ ] Sistema de ondas
@@ -275,7 +349,7 @@ assets. Protagonista: macaco em avião de bananas.
 
 ## Notas Técnicas
 
-- Pygame Community Edition (pygame-ce) 2.5.7
+- Pygame Community Edition (pygame-ce) 2.5.8
 - Python 3.14.7
 - Sistema de estados simples (sem máquinas de estados complexas)
 - Tratamento de erros para evitar crashes

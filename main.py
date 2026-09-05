@@ -32,7 +32,7 @@ def main():
 
     import pygame
     from jogo.settings import LARGURA, ALTURA
-    from jogo.aplicacao import Jogo
+    from jogo.telas.aplicacao import Jogo
 
     try:
         pygame.init()
