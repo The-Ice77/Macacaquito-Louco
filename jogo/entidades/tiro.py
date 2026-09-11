@@ -14,6 +14,7 @@ from ..settings import (
     ALTURA, LARGURA, MARGEM_SAIDA_PROJETIL,
     COR_BANANA, COR_PROJETIL_INIMIGO,
 )
+from ..sons import tocar
 
 
 def direcao_para(ox, oy, ax, ay):
@@ -89,6 +90,14 @@ class Tiro(Entidade):
         """Cria a explosão (se houver) na posição atual."""
         if self.raio_explosao <= 0:
             return
+        # som conforme o tamanho da explosão (raio do projétil)
+        if self.raio_explosao <= 35:
+            tocar("explosao_missil")
+            tocar("explosao_missil_aguda")
+        elif self.raio_explosao <= 60:
+            tocar("explosao_bomba")
+        else:
+            tocar("explosao_grande")
         self.criar_explosao(self.rect.centerx, self.rect.centery)
 
     def update(self):
