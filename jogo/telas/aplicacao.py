@@ -7,7 +7,7 @@ import pygame
 
 from ..settings import (
     LARGURA, ALTURA, FPS, NOME_JOGO, VITORIA_TRANSICAO, COR_TEXTO,
-    COR_ESCUDO, COR_JOGADOR,
+    COR_ESCUDO, COR_JOGADOR, FATOR_ESCALA_JOGADOR,
     SPAWN_INTERVALO_INICIAL, SPAWN_INTERVALO_MINIMO,
     PONTOS_DESBLOQUEIA_HELICOPTERO, PONTOS_DESBLOQUEIA_GUARDAPESADO,
     PONTOS_DESBLOQUEIA_CHEFE,
@@ -26,9 +26,10 @@ from ..entidades.powerup import (
 )
 from .vitoria import Vitoria
 from ..visual.efeito import (
-    criar_fragmentos, criar_flash_impacto, criar_flash_forte,
+    criar_fragmentos, criar_flash_forte,
     criar_particulas_coleta, criar_linha_turbo, criar_explosao_destruicao,
     criar_particulas_propulsao,
+    criar_casca_banana, criar_impacto_banana,
 )
 from ..visual.bg_fase import BackgroundFase
 from ..sons import (
@@ -67,9 +68,9 @@ class Jogo:
     def __init__(self, tela):
         self.tela = tela
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 30)
-        self.fonte_banner = pygame.font.SysFont(None, 64)
-        self.fonte_boss = pygame.font.SysFont(None, 48)
+        self.font = pygame.font.SysFont(None, 34)
+        self.fonte_banner = pygame.font.SysFont(None, 80)
+        self.fonte_boss = pygame.font.SysFont(None, 58)
         inicializar()
         tocar_musica("menu")
 
@@ -418,6 +419,9 @@ class Jogo:
         progresso = self.morte_timer / self.morte_duracao
         fade = max(0.0, 1.0 - progresso)
         frame.set_alpha(int(255 * fade))
+        # acompanha o tamanho do jogador na tela
+        frame = pygame.transform.smoothscale(
+            frame, (jogador.rect.width, jogador.rect.height))
         tela.blit(frame, jogador.rect.topleft)
 
     def atirar(self):
@@ -430,13 +434,18 @@ class Jogo:
 
         posicoes = [jogador.rect.centerx]
         if jogador.timer_tiro_duplo > 0:
-            posicoes = [jogador.rect.centerx - 12, jogador.rect.centerx + 12]
+            posicoes = [jogador.rect.centerx - 18, jogador.rect.centerx + 18]
 
         for x in posicoes:
             tiro = TiroJogador(x, jogador.rect.y, cor=cor,
                                tamanho=tamanho, dano=dano)
             self.todos_sprites.add(tiro)
             self.tiros.add(tiro)
+            # a casca sai atrás da banana: solta, fica para trás e some
+            criar_casca_banana(
+                x, jogador.rect.y + int(tamanho * 0.7),
+                self.todos_sprites, self.efeitos_visuais,
+            )
         tocar_alternado("tiro_jogador_a", "tiro_jogador_b")
 
     def _deduzir_vida(self):
@@ -562,7 +571,7 @@ class Jogo:
                         self.todos_sprites, self.efeitos_visuais,
                     )
                 else:
-                    criar_flash_impacto(
+                    criar_impacto_banana(
                         inimigo.rect.centerx, inimigo.rect.bottom,
                         self.todos_sprites, self.efeitos_visuais,
                     )
@@ -632,7 +641,7 @@ class Jogo:
             f"Vida: {self.jogador.vida}  |  Pontos: {self.pontos}",
             True, COR_TEXTO
         )
-        self.tela.blit(texto, (10, 10))
+        self.tela.blit(texto, (12, 12))
 
         # Indicador dos efeitos temporários ativos
         efeitos = self.jogador.efeitos_ativos()
@@ -640,7 +649,7 @@ class Jogo:
             texto_efeitos = self.font.render(
                 "  ".join(efeitos), True, COR_ESCUDO
             )
-            self.tela.blit(texto_efeitos, (10, 40))
+            self.tela.blit(texto_efeitos, (12, 50))
 
     def _atualizar_entrada(self):
         self.entrada_timer += 1
@@ -648,7 +657,7 @@ class Jogo:
         alvo_y = ALTURA - 60
         if self.jogador.rect.y > alvo_y:
             self.jogador.rect.y = max(alvo_y, self.jogador.rect.y - 7)
-        self.jogador.rect.x = LARGURA // 2 - 20
+        self.jogador.rect.x = LARGURA // 2 - self.jogador.rect.width // 2
         self.background.atualizar(0.25)
         self.background.desenhar(self.tela)
         self.todos_sprites.draw(self.tela)
@@ -673,11 +682,11 @@ class Jogo:
         titulo.set_alpha(alpha)
         sombra.set_alpha(alpha)
         cx = LARGURA // 2
-        self.tela.blit(sombra, (cx - titulo.get_width() // 2 + 3, 153))
-        self.tela.blit(titulo, (cx - titulo.get_width() // 2, 150))
+        self.tela.blit(sombra, (cx - titulo.get_width() // 2 + 3, 183))
+        self.tela.blit(titulo, (cx - titulo.get_width() // 2, 180))
         sub = self.font.render("Prepare-se!", True, COR_TEXTO)
         sub.set_alpha(alpha)
-        self.tela.blit(sub, (cx - sub.get_width() // 2, 220))
+        self.tela.blit(sub, (cx - sub.get_width() // 2, 265))
 
     def _desenhar_aviso_boss(self, tela):
         if self.aviso_boss <= 0:
@@ -713,9 +722,10 @@ class Jogo:
             self.todos_sprites.draw(self.tela)
             # anel visual do escudo ao redor do jogador
             if self.jogador.timer_escudo > 0:
+                raio_escudo = self.jogador.rect.width // 2 + 8
                 pygame.draw.circle(
                     self.tela, COR_ESCUDO,
-                    self.jogador.rect.center, 28, 3
+                    self.jogador.rect.center, raio_escudo, 3
                 )
             self.desenhar_hud()
             self._desenhar_aviso_boss(self.tela)

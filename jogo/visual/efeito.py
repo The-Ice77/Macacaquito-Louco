@@ -173,3 +173,76 @@ def criar_explosao_destruicao(x, y, cor, grupo_sprites, grupo_efeitos):
     grupo_sprites.add(flash)
     grupo_efeitos.add(flash)
     criar_fragmentos(x, y, cor, grupo_sprites, grupo_efeitos, qtd=12)
+
+
+class CascaProjetil(EfeitoVisual):
+    """Casca de banana que fica para trás do projétil (só efeito visual).
+
+    Acomou-se a banana no início, mas perde velocidade, ganha gravidade,
+    gira aos poucos e some. Não tem hitbox nem causa dano.
+    """
+
+    def __init__(self, x, y, vel_y=-6, lado=12):
+        super().__init__(x, y, lado)
+        self.vy = vel_y
+        self.vx = random.uniform(-0.6, 0.6)
+        self.gravidade = 0.22
+        self.duracao = random.randint(26, 34)
+        self.angulo = random.uniform(-30, 30)
+        self.vel_rot = random.choice([-3.2, -2.2, 2.2, 3.2])
+        self.casca_base = self._desenhar_casca(lado)
+        self.image = self.casca_base.copy()
+        self.rect = self.image.get_rect(center=(x, y))
+
+    def _desenhar_casca(self, lado):
+        """Meia-casca curva (pedaço de casca solto)."""
+        s = pygame.Surface((lado, lado), pygame.SRCALPHA)
+        esc = (104, 84, 38)
+        casca_cor = (206, 176, 74)
+        clara = (244, 216, 120)
+        r = pygame.Rect(2, lado // 2, lado - 4, lado // 2)
+        pygame.draw.arc(s, esc, r, 0.0, math.pi, 3)
+        pygame.draw.arc(s, casca_cor, r.inflate(-2, -2), 0.0, math.pi, 2)
+        pygame.draw.arc(s, clara, r.inflate(-4, -4), 0.0, math.pi, 1)
+        return s
+
+    def update(self):
+        if self.timer >= self.duracao:
+            self.kill()
+            return
+        self.timer += 1
+        self.vy += self.gravidade
+        self.rect.x += self.vx
+        self.rect.y += self.vy
+        self.angulo += self.vel_rot
+        rot = pygame.transform.rotozoom(self.casca_base, self.angulo, 1)
+        resto = 1 - self.timer / self.duracao
+        rot.set_alpha(int(255 * resto))
+        centro = self.rect.center
+        self.image = rot
+        self.rect = rot.get_rect(center=centro)
+
+
+def criar_casca_banana(x, y, grupo_sprites, grupo_efeitos, vel_y=-6):
+    """Casca que se solta atrás da banana (visual apenas, sem hitbox)."""
+    casca = CascaProjetil(x, y, vel_y=vel_y)
+    grupo_sprites.add(casca)
+    grupo_efeitos.add(casca)
+
+
+def criar_impacto_banana(x, y, grupo_sprites, grupo_efeitos):
+    """Reação rápida da banana ao acertar (flash + pedaços amarelos)."""
+    flash = Flash(x, y, (255, 240, 150), raio_max=10, duracao=7)
+    grupo_sprites.add(flash)
+    grupo_efeitos.add(flash)
+    for _ in range(5):
+        angulo = random.uniform(math.pi * 0.1, math.pi * 0.9)
+        vel = random.uniform(1.2, 3.0)
+        particula = Particula(
+            x + random.randint(-4, 4), y + random.randint(-4, 4),
+            math.cos(angulo) * vel, -abs(math.sin(angulo) * vel),
+            random.choice([(250, 225, 70), (214, 188, 80), (255, 246, 180)]),
+            tamanho=2, duracao=random.randint(10, 16), gravidade=0.09,
+        )
+        grupo_sprites.add(particula)
+        grupo_efeitos.add(particula)

@@ -9,12 +9,22 @@ import math
 
 import pygame
 
-from .entidade import Entidade
+from .entidade import Entidade, escalar, redimensionar
 from ..settings import (
     ALTURA, LARGURA, MARGEM_SAIDA_PROJETIL,
-    COR_BANANA, COR_PROJETIL_INIMIGO,
+    FATOR_ESCALA_PROJETIL, FATOR_ESCALA_EXPLOSAO,
+    COR_BANANA, COR_BANANA_POLPA, COR_PROJETIL_INIMIGO,
 )
+from ..visual.tema import banana_surface
 from ..sons import tocar
+
+
+def _escurecer(cor, fator=0.6):
+    return tuple(max(0, min(255, int(c * fator))) for c in cor)
+
+
+def _aclarar(cor, fator=1.3):
+    return tuple(max(0, min(255, int(c * fator) + 12)) for c in cor)
 
 
 def direcao_para(ox, oy, ax, ay):
@@ -25,6 +35,38 @@ def direcao_para(ox, oy, ax, ay):
     if tamanho == 0:
         return 0, 1
     return dx / tamanho, dy / tamanho
+
+
+def _desenhar_banana(lado, cor):
+    """Banana descascada (só a polpa), ponto de partida da estética do jogo.
+
+    Reaproveita a silhueta crescente já usada nos menus e a recolore como
+    polpa clara, com a polpa visível nas extremidades e textura em miniatura.
+    """
+    superficie = pygame.Surface((lado, lado), pygame.SRCALPHA)
+    t_casca = max(2, lado // 3 - 1)
+    ban = banana_surface(t_casca, cor=cor)
+    # reduz para caber dentro do quadro do projétil (mantendo proporção)
+    larg, alt = ban.get_size()
+    escala = min(lado / larg, lado / alt)
+    ban = redimensionar(ban, int(larg * escala), int(alt * escala))
+    b_x = (lado - ban.get_width()) // 2
+    b_y = (lado - ban.get_height()) // 2
+    superficie.blit(ban, (b_x, b_y))
+
+    # polpa: veia central + sementinhas para leitura de "fruta descascada"
+    ponta = _escurecer(_aclarar(cor, 0.6), 0.7)
+    cx = lado // 2
+    for y in (0, 1):
+        pygame.draw.line(superficie, _escurecer(cor, 0.82),
+                         (cx - 2 + y, lado // 2 - 2 + y * 2),
+                         (cx - 2 + y, lado // 2 + 3 + y * 2), 1)
+    for dx, dy in ((-4, -3), (4, -1)):
+        pygame.draw.circle(superficie, ponta, (cx + dx, lado // 2 + dy), 1)
+    # leve rastro translúcido abaixo (sensação de subida)
+    pygame.draw.rect(superficie, (255, 255, 255, 70),
+                     (lado // 2 - 1, lado - 3, 2, 2))
+    return superficie
 
 
 class Tiro(Entidade):
@@ -49,6 +91,10 @@ class Tiro(Entidade):
         if cor is None:
             cor = COR_BANANA
         self._desenhar(cor)
+        # amplia o projétil para acompanhar as naves maiores (hitbox proporcional)
+        centro = self.rect.center
+        self.image = escalar(self.image, FATOR_ESCALA_PROJETIL)
+        self.rect = self.image.get_rect(center=centro)
 
     def _desenhar(self, cor):
         self.image.fill(cor)
@@ -112,21 +158,25 @@ class Tiro(Entidade):
 
 
 class TiroJogador(Tiro):
-    """Projétil do jogador (banana), sempre para cima, sem explosão."""
+    """Projétil do jogador: banana descascada, sempre para cima, sem explosão.
+
+    Só muda a representação visual; velocidade, hitbox, dano e colisão são
+    os mesmos do Tiro base.
+    """
 
     def __init__(self, x, y, cor=COR_BANANA, tamanho=12, dano=1, brilho=False):
         super().__init__(x, y, 0, -10, cor=cor, tamanho=tamanho)
         self.dano = dano
         if cor is None:
             cor = COR_BANANA
-        # cor mais clara para o rastro atrás do projétil
-        clara = tuple(min(255, c + 70) for c in cor)
-        pygame.draw.rect(self.image, clara,
-                         (tamanho // 2 - 1, tamanho // 2, 2, tamanho // 2))
-        if brilho:
-            # brilho ao redor do tiro (indicador do tiro duplo)
-            pygame.draw.rect(self.image, (255, 255, 255),
-                             (1, 1, tamanho - 2, tamanho - 2), 2)
+        # a imagem vira a banana descascada (rect/hitbox continua igual)
+        cor_polpa = COR_BANANA_POLPA if cor == COR_BANANA else cor
+        self.image = _desenhar_banana(tamanho, cor_polpa)
+        self.rect = self.image.get_rect(center=self.rect.center)
+        # amplia a banana para acompanhar a nave maior
+        centro = self.rect.center
+        self.image = escalar(self.image, FATOR_ESCALA_PROJETIL)
+        self.rect = self.image.get_rect(center=centro)
 
 
 class Explosao(Entidade):
@@ -138,7 +188,8 @@ class Explosao(Entidade):
 
     def __init__(self, x, y, raio, cor=None, alvo=None):
         super().__init__(x, y, 0)
-        self.raio_max = max(2, raio)
+        self.raio_dano = max(2, raio)          # raio de dano (gameplay)
+        self.raio_max = max(2, int(raio * FATOR_ESCALA_EXPLOSAO))  # visual
         self.alvo = alvo
         self.dano_aplicado = False
         self.timer = 0
@@ -188,7 +239,7 @@ class Explosao(Entidade):
         self.dano_aplicado = True
         dx = self.alvo.rect.centerx - self.rect.centerx
         dy = self.alvo.rect.centery - self.rect.centery
-        if math.hypot(dx, dy) <= self.raio_max:
+        if math.hypot(dx, dy) <= self.raio_dano:
             return 1
         return 0
 

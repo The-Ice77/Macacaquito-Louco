@@ -66,7 +66,7 @@ class Ranking:
 
         top = self.fonte_pequena.render(
             f"TOP {MAX_RANKING}", True, COR_MENU_DESTAQUE)
-        tela.blit(top, (LARGURA // 2 - top.get_width() // 2, 148))
+        tela.blit(top, (LARGURA // 2 - top.get_width() // 2, 160))
 
     def _desenhar_lista(self, tela):
         rankings = carregar_ranking()
@@ -77,8 +77,8 @@ class Ranking:
                       (LARGURA // 2 - vazio.get_width() // 2, 250))
             return
 
-        y_inicio = 178
-        espaco = 33
+        y_inicio = 210
+        espaco = 36
         for i, entrada in enumerate(rankings):
             self._desenhar_linha(tela, i + 1, entrada,
                                  y_inicio + i * espaco)
@@ -102,18 +102,18 @@ class Ranking:
 
         num = self.fonte_posicao.render(f"{posicao:02d}", True,
                                         COR_MENU_DESTAQUE)
-        tela.blit(num, (215, y))
+        tela.blit(num, (370, y))
 
         ban = self.fonte_pequena.render("^ ", True, COR_BANANA)
         if destaque:
-            tela.blit(ban, (100, y + 4))
+            tela.blit(ban, (245, y + 4))
 
         nome = self.fonte_nick.render(nick, True, cor)
         tela.blit(nome, (LARGURA // 2 - nome.get_width() // 2, y))
 
         pontos = self.fonte_score.render(f"{score:,}".replace(",", "."),
                                          True, cor)
-        tela.blit(pontos, (585 - pontos.get_width(), y))
+        tela.blit(pontos, (LARGURA // 2 + 260 - pontos.get_width(), y))
 
     def _desenhar_voltar(self, tela):
         mouse = pygame.mouse.get_pos()

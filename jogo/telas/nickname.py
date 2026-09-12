@@ -46,8 +46,8 @@ class Nickname:
             "ENTRE COM SEU NICK", True, COR_MENU_TITULO)
         sombra = self.fonte_titulo.render(
             "ENTRE COM SEU NICK", True, COR_MENU_SOMBRA)
-        tela.blit(sombra, (LARGURA // 2 - titulo.get_width() // 2 + 3, 93))
-        tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 90))
+        tela.blit(sombra, (LARGURA // 2 - titulo.get_width() // 2 + 3, 103))
+        tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 100))
 
         self._desenhar_campo(tela)
         self._desenhar_confirmar(tela)
@@ -55,16 +55,16 @@ class Nickname:
 
         # macaco decorativo no canto, comemorando ao iniciar a partida
         if self.timer_celebracao > 0:
-            desenhar_macaco(tela, 78, 372, self.timer,
+            desenhar_macaco(tela, 78, 420, self.timer,
                             olhar_x=LARGURA // 2, celebrar=True)
         else:
-            desenhar_macaco(tela, 78, 372, self.timer,
+            desenhar_macaco(tela, 78, 420, self.timer,
                             olhar_x=LARGURA // 2)
 
     def _desenhar_campo(self, tela):
         """Campo de texto em madeira, com cursor piscando."""
         centro_x = LARGURA // 2
-        y = 230
+        y = 260
         largura = 420
         altura = 78
 
@@ -98,21 +98,21 @@ class Nickname:
         """Botão de confirmar (Enter) e subtítulo destacado."""
         mouse = pygame.mouse.get_pos()
         self.botoes = []
-        self._botao(tela, "CONFIRMAR", self.fonte_pequena, 370, mouse,
+        self._botao(tela, "CONFIRMAR", self.fonte_pequena, 440, mouse,
                     "confirmar", largura=240, altura=48)
         self._desenhar_voltar_dica(tela)
 
     def _desenhar_voltar_dica(self, tela):
         dica = self.fonte_pequena.render(
             "ENTER - CONFIRMAR   |   ESC - VOLTAR", True, COR_MENU_TEXTO)
-        tela.blit(dica, (LARGURA // 2 - dica.get_width() // 2, 438))
+        tela.blit(dica, (LARGURA // 2 - dica.get_width() // 2, 505))
 
     def _desenhar_dica(self, tela):
         linhas = [
             "LETRAS E NUMEROS - ate 8 caracteres",
             "O nickname e salvo no ranking",
         ]
-        y = 486
+        y = 556
         for linha in linhas:
             render = self.fonte_pequena.render(linha, True, COR_MENU_TEXTO)
             tela.blit(render, (LARGURA // 2 - render.get_width() // 2, y))

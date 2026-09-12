@@ -127,7 +127,7 @@ def _layout_selva():
             "cor": (COR_FOLHA_MEDIA if i % 3 else COR_FOLHA_ESCURA),
         })
 
-    flores = [160, 280, 420, 540, 640, 760]
+    flores = [200, 420, 640, 860, 1080, 1260]
 
     _layout_selva.lista = {
         "borda_esq": borda_esq,

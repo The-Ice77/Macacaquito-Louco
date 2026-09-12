@@ -25,9 +25,9 @@ PASSO_V = 150
 # Altura do tile: múltiplo de PASSO_V e >= 2 telas, para o loop ser contínuo
 TILE_H = ((ALTURA * 3 + PASSO_V - 1) // PASSO_V) * PASSO_V
 # Avenidas verticais (posição dos eixos centrais)
-AVENIDAS = [140, 420, 680]
+AVENIDAS = [220, 640, 1060]
 # Limites dos quarteirões no eixo x (bordas da tela + avenidas)
-COLUNAS = [0, 140, 420, 680, LARGURA]
+COLUNAS = [0, 220, 640, 1060, LARGURA]
 RUA_H = 16
 AVENIDA_L = 24
 

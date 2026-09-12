@@ -157,14 +157,14 @@ class Vitoria:
         sombra.set_alpha(int(alpha * 0.5))
         brilho.set_alpha(alpha)
 
-        tela.blit(brilho, (cx - brilho.get_width() // 2, 36))
-        tela.blit(sombra, (cx - titulo.get_width() // 2 + 3, 46 + flut))
-        tela.blit(titulo, (cx - titulo.get_width() // 2, 42 + flut))
+        tela.blit(brilho, (cx - brilho.get_width() // 2, 42))
+        tela.blit(sombra, (cx - titulo.get_width() // 2 + 3, 52 + flut))
+        tela.blit(titulo, (cx - titulo.get_width() // 2, 48 + flut))
 
         sub = self.fonte_subtitulo.render(
             "A BANANA ESTÁ SALVA!", True, COR_MENU_TEXTO)
         sub.set_alpha(self._fade_in(10, 20))
-        tela.blit(sub, (cx - sub.get_width() // 2, 106))
+        tela.blit(sub, (cx - sub.get_width() // 2, 118))
 
     def _desenhar_aviao(self, tela):
         alpha = self._fade_in(16, 20)
@@ -174,18 +174,18 @@ class Vitoria:
         _desenhar_aviao(frame, "comemorar")
         _desenhar_helice(frame, self.timer * 2.2)
 
-        aviao = pygame.transform.rotozoom(frame, 0, 1.6)
+        aviao = pygame.transform.rotozoom(frame, 0, 2.0)
         aviao.set_alpha(alpha)
         cx = LARGURA // 2 + int(math.sin(self.timer * 0.04) * 6)
-        cy = 208 + int(math.sin(self.timer * 0.07) * 4)
+        cy = 250 + int(math.sin(self.timer * 0.07) * 4)
         tela.blit(aviao, (cx - aviao.get_width() // 2,
                           cy - aviao.get_height() // 2))
 
     def _desenhar_macacos(self, tela):
         # macacos dos dois lados, pequenos, comemorando
-        desenhar_macaco(tela, 130, 340, self.timer,
+        desenhar_macaco(tela, 130, 400, self.timer,
                         olhar_x=LARGURA // 2, celebrar=True)
-        desenhar_macaco(tela, LARGURA - 130, 340, self.timer,
+        desenhar_macaco(tela, LARGURA - 130, 400, self.timer,
                         olhar_x=LARGURA // 2, celebrar=True)
 
     def _desenhar_resultados(self, tela):
@@ -195,7 +195,7 @@ class Vitoria:
         cx = LARGURA // 2
 
         rect_painel = pygame.Rect(0, 0, 430, 120)
-        rect_painel.center = (cx, 352)
+        rect_painel.center = (cx, 400)
 
         painel = pygame.Surface((430, 120), pygame.SRCALPHA)
         pygame.draw.rect(painel, (52, 36, 22), (4, 6, 426, 114),
@@ -234,9 +234,9 @@ class Vitoria:
     def _desenhar_botoes(self, tela):
         mouse = pygame.mouse.get_pos()
         if self.timer >= 48:
-            self._botao(tela, "JOGAR NOVAMENTE", self.fonte_botao, 482,
+            self._botao(tela, "JOGAR NOVAMENTE", self.fonte_botao, 578,
                         mouse, "reiniciar", largura=360, altura=60)
-            self._botao(tela, "MENU PRINCIPAL", self.fonte_botao, 556,
+            self._botao(tela, "MENU PRINCIPAL", self.fonte_botao, 650,
                         mouse, "menu", largura=300, altura=50)
 
         acao_hover = None

@@ -2,7 +2,7 @@
 
 ## Data: 03/09/2026
 
-> Última atualização: 11/09/2026
+> Última atualização: 12/09/2026
 
 ---
 
@@ -230,6 +230,45 @@ Efeitos visuais: anel pulsante, flutuação suave, partículas na coleta.
 
 ---
 
+### Etapa 18 — Redesenho Visual das Entidades (Sprites Geométricas)
+**Arquivos:** `jogo/entidades/*`, `jogo/visual/efeito.py`, `jogo/visual/tema.py`
+
+Todos os elementos passaram a ser desenhados com formas geométricas detalhadas do Pygame (sem imagens externas):
+
+- **Jogador:** avião-banana com hélice animada, chama de propulsão e macaco piloto com reações (normal, feliz, dano, surpresa, comemorar)
+- **Inimigos:**
+  - Guarda: viatura policial vista de cima (rodas, luzes rotativas, faróis)
+  - Helicóptero: rotor superior animado, patins, estabilizadores de cauda
+  - Viatura Rápida: aeronave de persecução alongada, rastro de velocidade
+  - Guarda Pesado: blindado com esteiras, placas de armadura e canhão com recuo ao disparar
+  - Chefe: asas varridas, pods de mísseis, luzes policiais piscando, rachaduras na fase 2
+- **Projéteis:** tiro do jogador virou banana descascada; solta a casca atrás como efeito visual
+- **Power-ups:** família de frutas (morango=TURBO, abacaxi=MEGA TIRO, melancia=ESCUDO, maçã=+VIDA, banana dourada=TIRO DUPLO, banana premiada=+PONTOS)
+- **Efeitos:** cascas de banana girando, impacto da banana, rastro de propulsão, partículas de coleta
+
+---
+
+### Etapa 19 — Aumento de Resolução e Escala das Entidades
+**Arquivos:** `jogo/settings.py`, `jogo/entidades/*`, `jogo/telas/*`, `jogo/visual/*`
+
+- **Resolução** aumentada de `800x600` (4:3) para `1280x720` (16:9)
+- **Fatores de escala** (a arte base é desenhada em grade pequena e ampliada com `smoothscale`, preservando os detalhes):
+
+| Elemento | Fator | Tamanho na tela |
+|----------|-------|-----------------|
+| Jogador | 2.2 | 40 → 88 px |
+| Inimigos | 2.0 | 40–70 → 80–140 px |
+| Power-ups | 1.7 | 30 → 51 px |
+| Projéteis | 1.8 | 12–32 → 21–58 px |
+| Explosões | 1.3 | só visual |
+
+- **Explosão:** separou o raio de dano (`raio_dano`, gameplay) do raio visual (`raio_max`)
+- **Layout de todas as telas** (menu, game over, pausa, opções, vitória, nickname, ranking), HUD, banner de entrada e o fundo da fase (avenidas em `[220, 640, 1060]`) reposicionados para 1280x720
+- `LINHA_EXPLOSAO_BOMBA` ajustada de `520` para `620`
+- Fonte/Velocidades de jogo mantidas (balanceamento inalterado)
+
+---
+
 ## Estrutura Final do Projeto
 
 ```
@@ -333,7 +372,8 @@ Macacaquito-Louco/
 - [x] Ranking local
 - [x] Polimento visual completo
 - [x] Rebalanceamento e fluxo de vitória
-- [ ] Melhorias visuais com sprites
+- [x] Redesenho visual das entidades (sprites geométricas)
+- [x] Aumento de resolução e escala das entidades
 - [ ] Sistema de ondas
 
 ---
@@ -342,6 +382,7 @@ Macacaquito-Louco/
 
 - Pygame Community Edition (pygame-ce) 2.5.8
 - Python 3.14.7
+- Resolução 1280x720 (16:9), com entidades ampliadas por fatores de escala
 - Sistema de estados simples (sem máquinas de estados complexas)
 - Tratamento de erros para evitar crashes
 - Reset completo ao reiniciar o jogo
