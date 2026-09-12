@@ -5,6 +5,8 @@ LARGURA = 800
 ALTURA = 600
 FPS = 60
 
+NOME_JOGO = "OPERAÇÃO BANANA"
+
 # Margem de remoção de projéteis fora da tela
 MARGEM_SAIDA_PROJETIL = 40
 
@@ -54,8 +56,14 @@ VELOCIDADE_CHEFE = 3
 SPAWN_INTERVALO_INICIAL = 110
 SPAWN_INTERVALO_MINIMO = 30
 PONTOS_DESBLOQUEIA_HELICOPTERO = 300
-PONTOS_DESBLOQUEIA_GUARDAPESADO = 1500
-PONTOS_DESBLOQUEIA_CHEFE = 2000
+# o guarda pesado aparece um pouco antes do chefe para aquecer a reta final
+PONTOS_DESBLOQUEIA_GUARDAPESADO = 350
+# o chefe surge com 500 pontos; derrotá-lo encerra o jogo com vitória
+PONTOS_DESBLOQUEIA_CHEFE = 500
+
+# Duração (em frames) da transição após derrotar o chefe,
+# durante a qual a explosão final é exibida antes da tela de vitória.
+VITORIA_TRANSICAO = 55
 
 # ============================================================
 # Projéteis dos inimigos

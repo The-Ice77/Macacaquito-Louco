@@ -43,26 +43,67 @@ A estrutura principal do projeto é:
     jogo/settings.py
         Configurações e constantes globais do jogo.
 
-    jogo/entidade.py
-        Classe base Entidade, derivada de pygame.sprite.Sprite.
+    jogo/sons.py
+        Sistema de áudio centralizado (carrega e toca os efeitos sonoros).
 
-    jogo/jogador.py
-        Classe Jogador e lógica relacionada ao jogador.
+    jogo/entidades/
+        Classes de entidades do jogo (jogador, inimigos, projéteis, power-ups).
 
-    jogo/inimigo.py
-        Classes relacionadas aos inimigos (forças policiais).
+        jogo/entidades/entidade.py
+            Classe base Entidade e movimento/tremor.
 
-    jogo/tiro.py
-        Classe relacionada aos projéteis.
+        jogo/entidades/jogador.py
+            Classe Jogador e lógica relacionada ao jogador.
 
-    jogo/menu.py
-        Tela inicial do jogo.
+        jogo/entidades/inimigo.py
+            Classes dos inimigos (forças policiais e chefe final).
 
-    jogo/game_over.py
-        Tela de game over.
+        jogo/entidades/tiro.py
+            Projéteis (jogador e inimigos) e explosões.
 
-    jogo/aplicacao.py
-        Classe Jogo: game loop, sistema de estados e lógica da partida.
+        jogo/entidades/powerup.py
+            Power-ups coletáveis (bananas com efeitos diferentes).
+
+    jogo/telas/
+        Telas e estados do jogo.
+
+        jogo/telas/aplicacao.py
+            Classe Jogo: game loop, sistema de estados e lógica da partida.
+
+        jogo/telas/menu.py
+            Tela inicial do jogo.
+
+        jogo/telas/game_over.py
+            Tela de game over.
+
+        jogo/telas/pausa.py
+            Menu de pausa durante a gameplay (continuar/reiniciar/sair).
+
+        jogo/telas/config.py
+            Menu de configurações (opções), por enquanto controle de volume.
+
+    jogo/visual/
+        Elementos visuais reutilizados (fundo, temas de menu, efeitos).
+
+        jogo/visual/bg_fase.py
+            Fundo do cenário de gameplay (cidade).
+
+        jogo/visual/tema.py
+            Tema de selva para os menus (moldura e botões de madeira).
+
+        jogo/visual/efeito.py
+            Efeitos visuais geométricos (partículas, flashes, explosões).
+
+    ferramentas/
+        Scripts auxiliares fora do pacote do jogo.
+
+        ferramentas/gerar_sons.py
+            Gera efeitos sonoros sintetizados (.wav) em audio/alertas/.
+
+    audio/
+        Assets de som organizados por uso (jogador, inimigos, impactos,
+        explosoes, powerups, alertas, interface, reservas). Ver
+        audio/LEIA-ME.md.
 
     requirements.txt
         Dependências do projeto.
@@ -74,7 +115,7 @@ A estrutura principal do projeto é:
         Configuração do OpenCode.
 
 Os módulos do jogo ficam dentro do pacote `jogo/` e se importam relativamente
-(ex.: `from .settings import LARGURA`).
+(ex.: `from ..settings import LARGURA`).
 
 Outros arquivos podem ser adicionados conforme o projeto evoluir.
 

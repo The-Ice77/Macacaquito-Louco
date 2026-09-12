@@ -2,8 +2,12 @@
 Classes de power-ups: itens coletáveis que dão vantagens ao jogador.
 
 Cada power-up cai do topo da tela devagar, é coletado ao tocar o jogador
-e desaparece se sair da tela.
+e desaparece se sair da tela. Enquanto está na tela, flutua levemente,
+gira e pulsa com um anel de brilho.
 """
+import math
+import random
+
 import pygame
 
 from .entidade import Entidade
@@ -26,6 +30,8 @@ class PowerUp(Entidade):
         self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
         self.rect = self.image.get_rect(center=(x, y))
         self._desenhar()
+        self.icon = self.image.copy()   # ícone estático (base)
+        self.fase = random.uniform(0, math.tau)
 
     def _desenhar(self):
         # sobrescrito por cada tipo
@@ -36,9 +42,30 @@ class PowerUp(Entidade):
         return None
 
     def update(self):
+        self.fase += 1
         self.rect.y += self.velocidade
         if self.rect.top > ALTURA:
             self.kill()
+            return
+
+        # flutuação vertical do ícone dentro da superfície
+        flut = int(math.sin(self.fase * 0.09) * 3)
+        alvo = pygame.Surface((30, 30), pygame.SRCALPHA)
+        alvo.blit(self.icon, (0, flut))
+
+        # anel de brilho que pulsa + pontinho girando (sensação de rotação)
+        anel = pygame.Surface((30, 30), pygame.SRCALPHA)
+        raio_anel = int(15 + math.sin(self.fase * 0.1) * 2)
+        pygame.draw.circle(anel, (255, 255, 255), (15, 15), raio_anel, 1)
+        anel.set_alpha(int(60 + 60 * (0.5 + 0.5 * math.sin(self.fase * 0.1))))
+        orbit = self.fase * 0.12
+        ox = math.cos(orbit) * (raio_anel + 1)
+        oy = math.sin(orbit) * (raio_anel + 1)
+        pygame.draw.circle(anel, (255, 255, 255),
+                           (int(15 + ox), int(15 + oy)), 1)
+        alvo.blit(anel, (0, 0))
+
+        self.image = alvo
 
 
 class BananaTurbo(PowerUp):

@@ -37,6 +37,8 @@ from ..settings import (
     LINHA_EXPLOSAO_BOMBA,
 )
 from .tiro import Tiro, direcao_para
+from ..sons import tocar
+from ..visual.efeito import Flash, Particula
 
 
 class Inimigo(Entidade, ABC):
@@ -58,6 +60,7 @@ class Inimigo(Entidade, ABC):
         self.tilt_atual = 0.0
         self.inclinacao_max = 6
         self.ultimo_x = x
+        self.timer = 0
 
     @abstractmethod
     def _movimentar(self):
@@ -90,6 +93,7 @@ class Inimigo(Entidade, ABC):
 
     def _atualizar_visual(self):
         """Inclina o desenho conforme o movimento horizontal (só visual)."""
+        self.timer += 1
         dx = self.rect.x - self.ultimo_x
         self.ultimo_x = self.rect.x
         if dx > 0:
@@ -124,6 +128,8 @@ class Guarda(Inimigo):
 
     def _movimentar(self):
         self.rect.y += self.velocidade
+        # pequena oscilação horizontal (dá "vida" ao guarda)
+        self.rect.x += math.sin(self.timer * 0.08) * 0.5
         if self.jogador is not None:
             if self.rect.centerx < self.jogador.rect.centerx:
                 self.rect.x += 1
@@ -141,6 +147,7 @@ class Guarda(Inimigo):
         tiro = Tiro(self.rect.centerx, self.rect.bottom,
                     0, VEL_BALA, cor=COR_BALA, tamanho=VEL_BALA_TAMANHO)
         self._registrar_tiro(tiro)
+        tocar("tiro_guarda")
 
     def update(self):
         self._movimentar()
@@ -163,6 +170,7 @@ class HelicopteroPolicial(Inimigo):
         self.timer_tiro = 0
         self.intervalo_tiro = 100
         self.inclinacao_max = 8
+        self.rotor_angulo = 0
 
     def _movimentar(self):
         self.rect.y += self.velocidade
@@ -175,8 +183,32 @@ class HelicopteroPolicial(Inimigo):
 
     def _desenhar(self):
         self.image.fill(self.cor)
-        pygame.draw.rect(self.image, (0, 0, 0), (5, 20, 40, 10))
-        pygame.draw.rect(self.image, (220, 220, 220), (10, 2, 30, 4))
+        # fuselagem / cabine
+        pygame.draw.rect(self.image, (10, 20, 50), (10, 18, 30, 18))
+        # janela dianteira
+        pygame.draw.rect(self.image, (180, 220, 255), (28, 20, 10, 8), 2)
+        # cauda
+        pygame.draw.rect(self.image, (30, 35, 42), (12, 30, 28, 5))
+        # esquis laterais
+        pygame.draw.line(self.image, (90, 90, 95), (12, 38), (14, 44), 3)
+        pygame.draw.line(self.image, (90, 90, 95), (36, 38), (34, 44), 3)
+        pygame.draw.line(self.image, (120, 120, 130), (8, 44), (40, 44), 3)
+        # mastro da hélice
+        pygame.draw.circle(self.image, (60, 60, 68), (25, 12), 3)
+
+    def _desenhar_rotor(self):
+        """Hélice do topo desenhada por cima, com movimento giratório."""
+        frame = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+        frame.blit(self.image, (0, 0))
+        cx, cy = 25, 7
+        for i in (0, 1):
+            a = math.radians(self.rotor_angulo + i * 90)
+            ex = math.cos(a) * 16
+            ey = math.sin(a) * 3
+            pygame.draw.ellipse(frame, (225, 230, 238),
+                                (cx + ex - 16, cy + ey - 2, 32, 4), 2)
+        pygame.draw.circle(frame, (75, 75, 85), (cx, cy), 4)
+        self.image = frame
 
     def atirar(self):
         # míssil mirado na posição atual do jogador, com leve correção
@@ -197,12 +229,15 @@ class HelicopteroPolicial(Inimigo):
         tiro.todos_sprites = self.todos_sprites
         tiro.explosoes = self.explosoes
         self._registrar_tiro(tiro)
+        tocar("tiro_helicoptero")
 
     def update(self):
         self._movimentar()
         self._atualizar_visual()
         self.saiu_da_tela()
         self._aplicar_tremor()
+        self.rotor_angulo = (self.rotor_angulo + 26) % 360
+        self._desenhar_rotor()
         self.timer_tiro += 1
         if self.timer_tiro >= self.intervalo_tiro:
             self.atirar()
@@ -223,7 +258,8 @@ class ViaturaRapida(Inimigo):
 
     def _movimentar(self):
         self.rect.x += self.velocidade_x
-        self.rect.y += 1
+        # leve balanço vertical enquanto avança (sensação de velocidade)
+        self.rect.y += 1 + math.sin(self.timer * 0.12) * 0.5
 
     def _desenhar(self):
         self.image.fill(self.cor)
@@ -235,6 +271,7 @@ class ViaturaRapida(Inimigo):
                     0, VEL_RAJADA, cor=COR_RAJADA,
                     tamanho=VEL_RAJADA_TAMANHO)
         self._registrar_tiro(tiro)
+        tocar("tiro_viatura")
 
     def _iniciar_rajada(self):
         self.tiros_rajada = QTD_RAJADA_VIATURA
@@ -268,6 +305,8 @@ class GuardaPesado(Inimigo):
 
     def _movimentar(self):
         self.rect.y += self.velocidade
+        # movimento pesado: pequena oscilação lenta
+        self.rect.y += math.sin(self.timer * 0.06) * 0.5
         if self.jogador is not None:
             if self.rect.centerx < self.jogador.rect.centerx:
                 self.rect.x += 1
@@ -281,6 +320,7 @@ class GuardaPesado(Inimigo):
 
     def atirar(self):
         # bomba lenta, grande, explode ao tocar o jogador ou na base
+        self.ativar_tremor(8)   # pequena vibração ao lançar a bomba
         tiro = Tiro(self.rect.centerx, self.rect.bottom,
                     0, VEL_BOMBA, cor=COR_BOMBA,
                     tamanho=VEL_BOMBA_TAMANHO,
@@ -291,6 +331,7 @@ class GuardaPesado(Inimigo):
         tiro.todos_sprites = self.todos_sprites
         tiro.explosoes = self.explosoes
         self._registrar_tiro(tiro)
+        tocar("tiro_guarda_pesado")
 
     def update(self):
         self._movimentar()
@@ -323,9 +364,15 @@ class ChefeFinal(Inimigo):
         self.timer_bomba = 0
         self.intervalo_bomba = INTERVALO_BOMBA_BOSS
         self.timer_chamada = 0
+        # entrada dramática: começa fora da tela e desce até o alto
+        self.rect.centery = -90
+        self.timer_entrada = 80
+        self.blink_timer = 0
 
     def _movimentar(self):
         self.rect.x += self.direcao * self.velocidade
+        # presença: balanço sutil enquanto patrulha
+        self.rect.y += math.sin(self.timer * 0.06) * 0.5
         if self.rect.x <= 20 or self.rect.x >= LARGURA - 70:
             self.direcao *= -1
 
@@ -335,6 +382,11 @@ class ChefeFinal(Inimigo):
         pygame.draw.circle(self.image, (0, 0, 0), (35, 40), 16, 2)
         pygame.draw.rect(self.image, (120, 40, 20), (25, 8, 20, 10))
 
+    def tomar_dano(self, dano):
+        """Chefe pisca de branco ao receber dano (reação)."""
+        super().tomar_dano(dano)
+        self.blink_timer = 4
+
     def entrar_fase2(self):
         if not self.esta_na_fase2:
             self.esta_na_fase2 = True
@@ -342,6 +394,22 @@ class ChefeFinal(Inimigo):
             self.intervalo_tiro = 35
             self._desenhar()
             self.base_image = self.image.copy()
+            tocar("boss_fase2")
+            # explosão visual de fragmentos + flash na mudança de fase
+            if self.todos_sprites is not None:
+                flash = Flash(self.rect.centerx, self.rect.centery,
+                              (255, 90, 30), raio_max=34, duracao=16)
+                self.todos_sprites.add(flash)
+                for _ in range(18):
+                    ang = random.uniform(0, math.tau)
+                    vel = random.uniform(1, 5)
+                    p = Particula(
+                        self.rect.centerx, self.rect.centery,
+                        math.cos(ang) * vel, math.sin(ang) * vel - 1,
+                        COR_CHEFE_FASE2, tamanho=random.randint(2, 5),
+                        duracao=random.randint(14, 24), gravidade=0.06,
+                    )
+                    self.todos_sprites.add(p)
 
     def _novo_tiro(self, tiro):
         tiro.todos_sprites = self.todos_sprites
@@ -365,6 +433,7 @@ class ChefeFinal(Inimigo):
             cor_explosao=COR_EXPLOSAO_MISSIL_BOSS,
         )
         self._novo_tiro(tiro)
+        tocar("tiro_boss")
 
     def _leque(self):
         # 5 projéteis em ângulos diferentes, sem perseguição
@@ -377,6 +446,7 @@ class ChefeFinal(Inimigo):
                         vx, vy, cor=COR_LEQUE,
                         tamanho=VEL_LEQUE_TAMANHO)
             self._novo_tiro(tiro)
+        tocar("tiro_viatura")
 
     def _bomba_especial(self):
         tiro = Tiro(self.rect.centerx, self.rect.bottom,
@@ -387,6 +457,7 @@ class ChefeFinal(Inimigo):
                     cor_explosao=COR_EXPLOSAO_BOMBA_BOSS,
                     explodir_na_linha=LINHA_EXPLOSAO_BOMBA)
         self._novo_tiro(tiro)
+        tocar("tiro_guarda_pesado")
 
     def chamar_guardas(self):
         if self.grupo_inimigos is None:
@@ -398,9 +469,22 @@ class ChefeFinal(Inimigo):
             self.grupo_inimigos.add(guarda)
 
     def update(self):
+        self._aplicar_tremor()
+
+        # entrada dramática: desce do topo sem atacar
+        if self.timer_entrada > 0:
+            self.timer_entrada -= 1
+            self.image = self.base_image.copy()
+            if self.rect.centery >= 70:
+                self.rect.centery = 70
+                self.timer_entrada = 0
+            else:
+                self.rect.y += 4
+            self._aplicar_tremor()
+            return
+
         self._movimentar()
         self._atualizar_visual()
-        self._aplicar_tremor()
 
         if not self.esta_na_fase2 and self.vida <= self.metade_vida:
             self.entrar_fase2()
@@ -426,3 +510,12 @@ class ChefeFinal(Inimigo):
             if self.timer_chamada >= 300:
                 self.chamar_guardas()
                 self.timer_chamada = 0
+
+        # resposta visual ao receber dano (piscar branco)
+        if self.blink_timer > 0:
+            self.blink_timer -= 1
+            frame = self.image.convert_alpha()
+            overlay = pygame.Surface(frame.get_size(), pygame.SRCALPHA)
+            overlay.fill((255, 255, 255, 110))
+            frame.blit(overlay, (0, 0))
+            self.image = frame

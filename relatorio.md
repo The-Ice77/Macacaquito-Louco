@@ -1,148 +1,290 @@
-# Relatório de Implementações - Macacuquito Louco
+# Relatório de Implementações - Operação Banana
 
 ## Data: 03/09/2026
 
-> Última atualização: 05/09/2026
+> Última atualização: 11/09/2026
+
+---
+
+## Visão Geral
+
+**Operação Banana** é um jogo 2D arcade em Python + Pygame onde o jogador controla um macaco em avião-banana, enfrentando forças policiais e um Chefe Final. O jogo foi construído incrementalmente ao longo de diversas etapas de implementação.
 
 ---
 
 ## Etapas Concluídas
 
-### 1. Tela Inicial (Menu)
-**Arquivo:** `menu.py`
+### Etapa 1 — Tela Inicial (Menu)
+**Arquivo:** `jogo/telas/menu.py`
 
-- Título "MACACUQUITO LOUCO" com efeito de sombra
+- Título "OPERAÇÃO BANANA" com efeito de sombra e dupla camada
 - Partículas animadas no fundo (80 pontos flutuantes)
-- Instruções de controles (WASD + ESPAÇO)
+- Macaco desenhado com desenho próprio (olhos, orelhas, sorriso)
+- Botões em estilo madeira/selva com símbolos (▶, ×)
+- Instruções de controles (WASD + ESPAÇO) na parte inferior
 - Texto "Pressione ENTER para jogar" com efeito de blink
-- Opção "ESC para sair"
+- Efeito de partículas celebração do macaco
 
-### 2. Tela de Game Over
-**Arquivo:** `game_over.py`
+---
+
+### Etapa 2 — Tela de Game Over
+**Arquivo:** `jogo/telas/game_over.py`
 
 - Título "GAME OVER" com efeito de sombra
 - Exibição da pontuação final
-- Opção "ENTER - Reiniciar" com blink
-- Opção "ESC - Sair"
-- Mensagem "Obrigado por jogar!"
+- Botões "REINICIAR" e "SAIR" em estilo madeira/selva (hover com mouse)
+- Rodapé com nome do jogo
 - Partículas animadas no fundo (tema vermelho)
 
-### 3. Sistema de Estados do Jogo
-**Arquivo:** `jogo/aplicacao.py`
+---
 
-Três estados implementados:
-- `menu` → Tela inicial
-- `jogando` → Gameplay principal
-- `game_over` → Tela de fim de jogo
+### Etapa 3 — Sistema de Estados do Jogo
+**Arquivo:** `jogo/telas/aplicacao.py`
 
-Fluxo: MENU → JOGANDO → GAME_OVER → (reiniciar ou sair)
+Estados implementados (expansão contínua):
 
-### 4. Dificuldade Progressiva
-**Arquivo:** `jogo/aplicacao.py`
+| Estado | Função |
+|--------|--------|
+| `menu` | Tela inicial (navegável com mouse/teclado) |
+| `nickname` | Cadastro de nickname antes de jogar |
+| `entrada` | Transição animada "Prepare-se!" |
+| `jogando` | Gameplay principal |
+| `pausa` | Pausa durante jogo (ESC) |
+| `config` | Menu de opções (volume) |
+| `morte` | Animação de morte do jogador |
+| `game_over` | Tela de derrota |
+| `ranking` | Top 10 pontuações locais |
+| `vitoria` | Tela de sucesso ao derrotar o Boss |
 
-- Spawn intervalo diminui 2 unidades a cada 100 pontos
+---
+
+### Etapa 4 — Dificuldade Progressiva
+**Arquivo:** `jogo/telas/aplicacao.py`
+
+- Spawn intervalo diminui a cada 100 pontos
 - Inimigos aparecem mais rápido conforme a pontuação aumenta
 - Limite mínimo de 15 para o spawn intervalo
-
-### 5. Tratamento de Erros
-**Arquivo:** `main.py`, `jogo/aplicacao.py`
-
-Proteções implementadas:
-- Inicialização do pygame
-- Criação da tela
-- Criação de tiros
-- Criação de inimigos
-- Eventos de teclado
-
-### 6. Sistema de Dependências
-**Arquivo:** `requirements.txt` (novo)
-
-```
-pygame-ce>=2.5.0
-```
-
-### 7. Auto-instalação de Dependências
-**Arquivo:** `main.py`
-
-- Verifica se pygame está instalado
-- Instala automaticamente via pip se necessário
-- Reinicia o jogo após instalação
-
-### 8. Cores para Menus
-**Arquivo:** `jogo/settings.py`
-
-Constantes adicionadas:
-- `COR_MENU_FUNDO` (10, 10, 30)
-- `COR_MENU_TITULO` (0, 255, 255) - ciano neon
-- `COR_MENU_TEXTO` (255, 255, 255) - branco
-- `COR_MENU_DESTAQUE` (255, 255, 0) - amarelo
-- `COR_MENU_SOMBRA` (0, 100, 100) - ciano escuro
+- Novos tipos de inimigos são desbloqueados conforme a pontuação:
+  - Guarda e Viatura: desde o início
+  - Helicóptero: a partir de 100 pontos
+  - Guarda Pesado: a partir de 350 pontos
+  - Chefe Final: a partir de 500 pontos
 
 ---
 
-## Etapa 9: Reorganização da Estrutura
+### Etapas 5–7 — Tratamento de erros, dependências e auto-instalação
+**Arquivos:** `main.py`, `jogo/telas/aplicacao.py`
 
-Todos os módulos do jogo foram organizados em um pacote `jogo/`, separando responsabilidades:
-
-### Estrutura Antiga (tudo na raiz)
-
-```
-main.py, settings.py, entidade.py, jogador.py,
-robo.py, tiro.py, menu.py, game_over.py
-```
-
-### Estrutura Nova (pacote jogo/)
-
-```
-main.py                # Fino: verifica dependências e inicia o jogo
-jogo/
-  __init__.py         # Marca como pacote Python
-  settings.py         # Configurações e constantes
-  entidade.py         # Classe base Entidade (sprite)
-  jogador.py          # Classe Jogador
-  tiro.py             # Classe Tiro
-  robo.py             # Classes de inimigos (Robo, RoboZigueZague)
-  menu.py             # Tela inicial
-  game_over.py        # Tela de game over
-  aplicacao.py        # Classe Jogo: game loop, estados e reset
-```
-
-### Responsabilidades separadas
-
-| Arquivo | Responsabilidade |
-|---------|-----------------|
-| `main.py` | Entrada, auto-instalação de dependências, inicialização da tela |
-| `jogo/aplicacao.py` | Game loop, sistema de estados, lógica de jogo, reset |
-| demais módulos | Cada entidade/classe com sua própria responsabilidade |
-
-### Melhorias
-- `main.py` ficou enxuto (antes concentrava toda a lógica)
-- Lógica de reset extraída para o método `Jogo.iniciar_nova_partida()`
-- Imports relativos dentro do pacote (`from .settings import ...`)
-- Removido tracking indevido de `__pycache__` do Git
+- Verificação e instalação automática de dependências (`requirements.txt`)
+- Proteções em inicialização do Pygame, criação da tela, inimigos e projéteis
+- Reset completo ao reiniciar (`iniciar_nova_partida()`)
 
 ---
 
-## Arquivos do Projeto
+### Etapa 8 — Reorganização em Subpacotes
+**Estrutura:** `jogo/entidades/`, `jogo/telas/`, `jogo/visual/`
 
-| Arquivo | Descrição |
-|---------|-----------|
-| `main.py` | Ponto de entrada, dependências, inicialização |
-| `jogo/__init__.py` | Marca o pacote `jogo` |
-| `jogo/settings.py` | Configurações e constantes |
-| `jogo/entidades/entidade.py` | Classe base para sprites |
-| `jogo/entidades/jogador.py` | Classe do jogador |
-| `jogo/entidades/inimigo.py` | Classes de inimigos |
-| `jogo/entidades/tiro.py` | Classes dos projéteis e explosões |
-| `jogo/entidades/powerup.py` | Classes de power-ups |
-| `jogo/telas/aplicacao.py` | Classe Jogo: game loop e estados |
-| `jogo/telas/menu.py` | Tela inicial |
-| `jogo/telas/game_over.py` | Tela de game over |
-| `jogo/visual/bg_fase.py` | Background da gameplay (cidade) |
-| `jogo/visual/tema.py` | Tema de selva dos menus |
-| `jogo/visual/efeito.py` | Efeitos visuais (partículas etc.) |
-| `requirements.txt` | Dependências |
-| `relatorio.md` | Este relatório |
+Todos os módulos foram organizados em três subpacotes:
+- `entidades/` — entidade, jogador, inimigo, tiro, powerup
+- `telas/` — aplicacao, menu, game_over e telas extras
+- `visual/` — bg_fase, tema, efeito
+
+Imports relativos atualizados; `main.py` importa de `jogo.telas.aplicacao`.
+
+---
+
+### Etapa 9 — Novos Inimigos (Etapa A)
+**Arquivo:** `jogo/entidades/inimigo.py`
+
+Classes abstrata `Inimigo` (ABC) e inimigos:
+
+| Classe | Vida | Pontos | Comportamento |
+|--------|------|--------|---------------|
+| `Guarda` | 1 | 10 | Desce com zigue-zague, segue X do jogador |
+| `HelicopteroPolicial` | 3 | 25 | Segue X do jogador, dispara míssil direcionado |
+| `ViaturaRapida` | 1 | 15 | Entra pelas laterais, rajada rápida |
+
+**Sistema de spawn por peso:** `escolher_inimigo()` sorteia tipo conforme pontuação.
+
+**Projéteis inimigos:** `Tiro.__init__(x, y, direcao=1)` — `direcao=-1` para inimigos.
+
+---
+
+### Etapa 10 — GuardaPesado e ChefeFinal
+**Arquivo:** `jogo/entidades/inimigo.py`
+
+**GuardaPesado** (a partir de 350 pontos):
+- Vida 8, ponto 350
+- Segue o jogador, dispara bombas explosivas vermelhas
+- Destruição com flash verde e fragmentos
+
+**ChefeFinal** (a partir de 500 pontos):
+- Vida 80, ponto 500
+- Fica no topo da tela, move de um lado ao outro
+- **Fase 1:** barragem de 2 projéteis direcionados
+- **Fase 2 (vida ≤ 50%):** vermelho intenso, rajadas em leque (3 projéteis), bombas explosivas
+- Flash vermelho e fragmentos na mudança de fase
+- Ao ser derrotado: **vitória** (não reaparece)
+
+---
+
+### Etapa 11 — Power-ups
+**Arquivo:** `jogo/entidades/powerup.py`
+
+Bananas que caem do topo e são coletadas ao tocar o jogador:
+
+| Power-up | Efeito | Duração |
+|----------|--------|---------|
+| Turbo | Velocidade ×1.5 | 10s |
+| Tiro Duplo | Dois projéteis | 12s |
+| Casca (Escudo) | Bloqueia 1 dano | Absorção |
+| Explosiva (Mega Tiro) | Dano ×3 | 8s |
+| Coração | +1 vida | Instantâneo |
+| Estrela (Pontos) | +150 pontos | Instantâneo |
+
+Efeitos visuais: anel pulsante, flutuação suave, partículas na coleta.
+
+---
+
+### Etapa 12 — Efeitos Visuais e Tema de Selva
+**Arquivos:** `jogo/visual/efeito.py`, `jogo/visual/tema.py`
+
+**Efeitos** (`efeito.py`): partículas de fragmentos, flashes de impacto, explosões com dano de área, partículas de propulsão.
+
+**Tema de selva** (`tema.py`):
+- Moldura tropical com folhas, cipós e bananas
+- Botões em placas de madeira com símbolos (▶, ×, ←)
+- Macaco com olhos, orelhas, sorriso e comemoração
+- Banana flutuante com brilho
+
+---
+
+### Etapa 13 — Background da Gameplay (Cidade)
+**Arquivo:** `jogo/visual/bg_fase.py`
+
+- Cidade procedural vista de cima, estilo Nova York
+- Tile que se repete verticalmente com rolagem contínua
+- Desfoque (downscale/upscale) e nuvens para sensação de altitude
+- Paleta dessaturada para não competir com inimigos
+
+---
+
+### Etapa 14 — Sistema de Áudio Completo
+**Arquivo:** `jogo/sons.py`
+
+- Efeitos sonoros carregados de `audio/` (17 categorias)
+- Controle de volume (mestre e efeitos separados)
+- Música de fundo por estado (menu, gameplay, game over, vitória)
+- `tocar()` seguro sem mixer (checagem `mixer.init()`)
+- Sons sintetizados em `audio/alertas/` via `ferramentas/gerar_sons.py`
+- Referência completa: `audio/LEIA-ME.md`
+
+---
+
+### Etapa 15 — Telas Extras e Fluxo Completo
+**Arquivos:** `nickname.py`, `pausa.py`, `config.py`, `ranking.py` (tela), `ranking.py` (lógica), `vitoria.py`
+
+**Nickname:** entrada de até 8 caracteres, cursor piscando, confirmação com Enter.
+
+**Pausa (ESC):** menu com CONTINUAR / REINICIAR / SAIR, botões madeira/selva.
+
+**Configurações:** barras de volume clicáveis (Volume Geral / Efeitos Sonoros), seletor por teclado.
+
+**Ranking:** top 10 pontuações salvas em `ranking.json`, seleção circular entre REINICIAR e MENU.
+
+**Vitória (OPERAÇÃO CONCLUÍDA!):** tela comemorativa ao derrotar o Chefe Final, com:
+- Título com brilho e fade-in
+- Subtítulo "A BANANA ESTÁ SALVA!"
+- Avião comemorando + hélice animada
+- Dois macacos celebrando nas laterais
+- Painel de resultados (pontuação, inimigos derrotados, vidas restantes)
+- Confetes e bananas caindo nas laterais
+- Botões JOGAR NOVAMENTE / MENU PRINCIPAL
+
+---
+
+### Etapa 16 — Polimento Visual Completo
+**Arquivos:** `tema.py`, `jogador.py`, `efeito.py`, `inimigo.py`, `powerup.py`, `aplicacao.py`, `game_over.py`
+
+- **Jogador:** desenho propio do avião-banana com hélice animada e chama de propulsão
+- **Reações:** jogador reage visualmente ao coletar power-up, levar dano, ficar em escudo
+- **Inimigos:** oscilação suave (Guarda), hélice animada (Helicóptero), vibração no ataque, flash/fragmentos na destruição e mudança de fase (Boss)
+- **Power-ups:** flutuação suave e anel pulsante
+- **Propulsão:** partículas de fumaça atrás do avião durante movimento, turbo com flash e rastro
+- **Boss:** entrada animada com timer, blink ao tomar dano (fase 2), flash vermelho na mudança de fase
+- **Tela de derrota:** layout uniforme e espaçado, painel de recorde (NEW HIGH SCORE!) ou "TENTE NOVAMENTE!"
+- **Menu principal:** título com dupla camada, macaco com "olhar" ao mouse, banana flutuante, partículas celebração
+- **Rodapés:** nome do jogo em todas as telas
+
+---
+
+### Etapa 17 — Rebalanceamento Final e Vitória
+**Arquivos:** `settings.py`, `aplicacao.py`, `sons.py`, `vitoria.py`
+
+- **Chefe Final:** desbloqueado a partir de **500 pontos** (antes 2000)
+- **Guarda Pesado:** desbloqueado a partir de **350 pontos** (antes 1200)
+- **Sem reaparecimento do Boss:** ao ser derrotado, jogo encerra com vitória
+- **Transição de vitória:** ~55 frames mostrando explosão final antes da tela
+- **Contador de inimigos derrotados:** novas estatísticas na tela de vitória
+- **Som de vitória:** reutiliza sino pesado existente (`impactBell_heavy_001.ogg`)
+
+---
+
+## Estrutura Final do Projeto
+
+```
+Macacaquito-Louco/
+│
+├── main.py
+├── requirements.txt
+├── readme.md
+├── relatorio.md
+├── AGENTS.md
+├── opencode.json
+├── ranking.json                # Dados do ranking local (top 10)
+│
+├── audio/
+│   ├── jogador/                # Sons do jogador
+│   ├── inimigos/               # Sons dos inimigos
+│   ├── impactos/               # Sons de impacto
+│   ├── explosoes/              # Sons de explosão
+│   ├── powerups/               # Sons de power-up
+│   ├── alertas/                # Sons de alerta (sintetizados)
+│   ├── interface/              # Sons de menu e interface
+│   ├── soundtrack/             # Música de fundo
+│   └── LEIA-ME.md              # Referência dos sons
+│
+├── ferramentas/
+│   └── gerar_sons.py           # Gera sons sintetizados (.wav)
+│
+└── jogo/
+    ├── __init__.py
+    ├── settings.py
+    ├── sons.py
+    ├── ranking.py              # Lógica do ranking (carregar/salvar)
+    │
+    ├── entidades/
+    │   ├── entidade.py
+    │   ├── jogador.py
+    │   ├── inimigo.py
+    │   ├── tiro.py
+    │   └── powerup.py
+    │
+    ├── telas/
+    │   ├── aplicacao.py
+    │   ├── menu.py
+    │   ├── nickname.py
+    │   ├── pausa.py
+    │   ├── config.py
+    │   ├── game_over.py
+    │   ├── ranking.py
+    │   └── vitoria.py
+    │
+    └── visual/
+        ├── bg_fase.py
+        ├── tema.py
+        └── efeito.py
+```
 
 ---
 
@@ -150,198 +292,47 @@ jogo/
 
 | Tecla | Ação |
 |-------|------|
-| W | Mover para cima |
-| A | Mover para esquerda |
-| S | Mover para baixo |
-| D | Mover para direita |
-| ESPAÇO | Atirar |
-| ENTER | Iniciar / Reiniciar |
-| ESC | Sair |
+| W / ↑ | Mover para cima |
+| A / ← | Mover para esquerda |
+| S / ↓ | Mover para baixo |
+| D / → | Mover para direita |
+| ESPAÇO | Atirar (segurar para rajada) |
+| ENTER | Confirmar / Selecionar |
+| ESC | Pausar (durante jogo) / Voltar (nos menus) |
 
 ---
 
-## Etapa 10: Novos Inimigos (Etapa A - forças policiais)
+## Arquivos Novos / Modificados (etapas recentes)
 
-Identidade visual cômica/cartunesca inspirada en perseguição aérea, sem copiar
-assets. Protagonista: macaco em avião de bananas.
-
-### Arquivos modificados/criados
-
-| Arquivo | Alteração |
+| Arquivo | Descrição |
 |---------|-----------|
-| `jogo/robo.py` | **Removido** (renomeado para `inimigo.py`) |
-| `jogo/inimigo.py` | **Novo** - classes de inimigos |
-| `jogo/tiro.py` | Parametrizado com direção (jogador sobe, inimigo desce) |
-| `jogo/jogador.py` | Visual do avião de bananas |
-| `jogo/settings.py` | Cores e balanceamento dos inimigos |
-| `jogo/aplicacao.py` | Sistema de spawn por peso + projéteis inimigos |
-| `jogo/game_over.py` | Cor COR_ROBO renomeada para COR_GAME_OVER |
-
-### `jogo/inimigo.py` - classe abstrata `Inimigo`
-- Base abstrata (`ABC`) com `vida`, `pontos`, `cor`, `tomar_dano(dano)`,
-  `saiu_da_tela()` e métodos abstratos `_movimentar()` e `_desenhar()`.
-- Métodos abstratos garantem que cada inimigo implemente movimento e visual.
-
-### Inimigos da Etapa A
-
-| Classe | Papel | Movimento | Vida/Pontos | Dispara |
-|--------|-------|-----------|-------------|---------|
-| `Guarda` | básico | desce com leve zigue-zague | 1 / 10 | não |
-| `HelicopteroPolicial` | intermediário | segue X do jogador + desce | 3 / 25 | sim |
-| `ViaturaRapida` | veloz | entra pela lateral, atravessa | 1 / 15 | não |
-
-### Sistema de spawn por peso (`aplicacao.py`)
-- `escolher_inimigo()` sorteia o tipo por pesos conforme a pontuação:
-  - `Guarda` (peso 5) + `Viatura` (peso 2) desde o início
-  - `Helicoptero` (peso 2) desbloqueado a partir de 100 pontos
-- `criar_inimigo()` posiciona cada tipo (viatura entra pelas laterais).
-- Pontuação agora usa `inimigo.pontos` (antes sempre +1).
-
-### Projéteis inimigos
-- Novo group `tiros_inimigos` no `aplicacao.py`.
-- Helicóptero dispara projéteis que descem e colidem com o jogador.
-- `Tiro.__init__(x, y, direcao=1)` - `direcao=-1` para inimigos.
-
-### Tratamento de erros
-- `criar_inimigo` envolvido em try/except com mensagem clara.
-- `criar_tiro_inimigo` retorna `None` em caso de erro (evita crash).
+| `jogo/sons.py` | Sistema de áudio centralizado |
+| `jogo/ranking.py` | Lógica do ranking (carregar/salvar/adicionar) |
+| `jogo/telas/nickname.py` | Tela de entrada de nickname |
+| `jogo/telas/pausa.py` | Menu de pausa |
+| `jogo/telas/config.py` | Menu de configurações (volume) |
+| `jogo/telas/ranking.py` | Tela do ranking |
+| `jogo/telas/vitoria.py` | Tela de vitória |
+| `audio/` (pasta inteira) | Assets de som organizados |
+| `ferramentas/gerar_sons.py` | Script de geração de sons sintetizados |
+| `ranking.json` | Dados persistidos do ranking |
 
 ---
 
-## Etapa 10.1: Ajustes pós-Etapa A
+## Próximos Passos (pendências)
 
-- **Guarda** agora se move em direção ao jogador (segue o X do jogador
-  enquanto desce), em vez de apenas zigue-zague aleatório.
-- **Correção de game over**: o jogador morre exatamente quando a vida chega
-  a `0` (antes podia continuar até `-3`). Danos de projéteis inimigos e
-  colisões agora são contabilizados juntos no método `_deduzir_vida()`, que
-  checa `vida <= 0` imediatamente.
-
----
-
-## Etapa 10.2: Etapa B — GuardaPesado e ChefeFinal
-
-### GuardaPesado (`jogo/inimigo.py`)
-- Novo inimigo raro, lento e resistente (vida 8).
-- Aparece a partir de 1200 pontos com peso baixo (1) no spawn.
-- Segue o jogador horizontalmente enquanto desce.
-- Dispara projéteis **fortes** (vermelhos) em intervalos longos.
-- Cores e constantes em `settings.py` (`COR_GUARDAPESADO`,
-  `VIDA_GUARDAPESADO`, etc.).
-
-### ChefeFinal (`jogo/inimigo.py`)
-- Chefe ruivo/viajero, fica no topo e se move de um lado ao outro.
-- Vida 40, vale 200 pontos.
-- **Fase 1**: barragem de 2 projéteis normais.
-- **Fase 2** (vida ≤ metade): muda para vermelho intenso, fica mais
-  rápido, dispara barragem de 3 projéteis fortes e **chama Guardas**
-  periodicamente.
-- Invocação por pontuação: surge a partir de 2000 pontos
-  (`PONTOS_DESBLOQUEIA_CHEFE`); quando derrotado, reaparece após mais
-  1000 pontos.
-
-### Tiro (`jogo/tiro.py`)
-- `Tiro` agora aceita `cor` opcional para projéteis fortes (padrão
-  preservado).
-
-### Integração (`jogo/aplicacao.py`)
-- `escolher_inimigo` inclui `guarda_pesado` após 1200 pontos.
-- `criar_inimigo` cria `GuardaPesado`.
-- Novo método `tratar_chefe()` controla invocação/reinvocação do chefe.
-- `iniciar_nova_partida` reseta o chefe e o próximo limiar.
-
----
-
-## Etapa 10.3: Ajustes de balanceamento e disparo
-
-- **Correção de colisão**: antes, `groupcollide(..., True, True)` matava
-  qualquer inimigo com 1 tiro, ignorando a vida. Agora cada tiro aplica
-  `tomar_dano(tiro.velocidade)` e o inimigo só morre quando a vida chega a
-  `0`. Isso faz a vida dos inimigos (heli, guarda pesado, chefe) contar de
-  verdade.
-- **Chefe mais resistente**: vida aumentada de 40 para 80 (8 tiros para
-  derrotar, em vez de 1).
-- **Guarda agora dispara**: projéteis simples em intervalos regulares.
-- **Helicóptero e GuardaPesado já disparavam**; confirmado em loop real.
-- Todos os inimigos recebem `tiros_inimigos` na criação (`criar_inimigo`).
-
----
-
-## Etapa 11: Power-ups
-
-**Arquivos:** `jogo/entidades/powerup.py`, `jogo/telas/aplicacao.py`, `jogo/settings.py`
-
-- Bananas especiais caem do topo e são coletadas ao tocar o jogador.
-- Tipos: **Turbo** (velocidade ×1,5), **Tiro Duplo** (2 projéteis),
-  **Escudo** (absorve dano), **Mega Tiro** (dano 3), **Coração**
-  (recupera 1 vida) e **Estrela** (pontos bônus).
-- Spawn ocasional com intervalo variável e limite de 3 power-ups
-  simultâneos na tela (`POWERUP_MAX_NA_TELA`).
-- Efeitos temporários controlados por timers no `Jogador`, com
-  indicador dos efeitos ativos no HUD.
-- Durações configuráveis em `settings.py` (`POWERUP_DURACAO_*`).
-
----
-
-## Etapa 12: Efeitos visuais e tema de selva
-
-**Arquivos:** `jogo/visual/efeito.py`, `jogo/visual/tema.py`,
-`jogo/telas/menu.py`, `jogo/telas/game_over.py`
-
-- **Efeitos** (`efeito.py`): partículas de fragmentos e coleta, flashes
-  de impacto, explosões com dano de área e linhas de velocidade no turbo.
-- **Tema de selva** (`tema.py`): moldura tropical com folhas, cipós,
-  bananas e botões em placas de madeira, reutilizada por Menu e GameOver.
-- Menu e GameOver passam a ter botões clicáveis (hover com mouse) além
-  do teclado (ENTER/ESC).
-
----
-
-## Etapa 13: Background da gameplay (cidade)
-
-**Arquivo:** `jogo/visual/bg_fase.py` (+ cores em `jogo/settings.py`)
-
-- Cidade procedural (estilo Nova York) vista de cima, gerada em um tile
-  que se repete verticalmente com rolagem contínua.
-- Rolagem para baixo transmite vôo para a frente (sem efeito de "ré").
-- Desfoque (downscale/upscale) e nuvens ocasionais dão sensação de
-  altitude variável.
-- Camada visual secundária: paleta escura e dessaturada, poucos detalhes
-  e carros discretos, para não competir com inimigos e projéteis.
-
----
-
-## Etapa 14: Reorganização do pacote `jogo/` em subpacotes
-
-Continua a organização iniciada na Etapa 9, agora separando
-responsabilidades em três subpacotes:
-
-```
-jogo/
-  settings.py        # Configurações e constantes
-  entidades/         # entidade, jogador, inimigo, tiro, powerup
-  telas/             # aplicacao, menu, game_over
-  visual/            # bg_fase, tema, efeito
-```
-
-- Todos os imports relativos foram atualizados; `main.py` agora
-  importa de `jogo.telas.aplicacao`.
-- Separa as camadas: entidades do jogo, telas/estados e visual
-  (cenário, tema e efeitos).
-- Cada subpacote possui seu próprio `__init__.py`.
-
----
-
-## Etapa 11+ (Próximos Passos)
-
-- [x] Diferentes tipos de inimigos (básicos da Etapa A)
+- [x] Sons e música
+- [x] Diferentes tipos de inimigos (básicos)
 - [x] GuardaPesado (inimigo raro e resistente)
-- [x] ChefeFinal (com fases e chamada de inimigos)
-- [x] Power-ups (Etapa 11)
-- [x] Efeitos visuais e tema de selva (Etapa 12)
-- [x] Background da gameplay (Etapa 13)
-- [x] Reorganização em subpacotes (Etapa 14)
-- [ ] Sons e música
+- [x] ChefeFinal (com fases)
+- [x] Power-ups
+- [x] Efeitos visuais e tema de selva
+- [x] Background da gameplay
+- [x] Reorganização em subpacotes
+- [x] Telas extras (nickname, pausa, config, ranking, vitória)
+- [x] Ranking local
+- [x] Polimento visual completo
+- [x] Rebalanceamento e fluxo de vitória
 - [ ] Melhorias visuais com sprites
 - [ ] Sistema de ondas
 
@@ -354,3 +345,5 @@ jogo/
 - Sistema de estados simples (sem máquinas de estados complexas)
 - Tratamento de erros para evitar crashes
 - Reset completo ao reiniciar o jogo
+- Ranking persistente em JSON (top 10)
+- Áudio centralizado e seguro sem mixer

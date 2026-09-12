@@ -105,11 +105,39 @@ def criar_fragmentos(x, y, cor, grupo_sprites, grupo_efeitos, qtd=8):
         grupo_efeitos.add(particula)
 
 
-def criar_flash_impacto(x, y, grupo_sprites, grupo_efeitos):
+def criar_flash_impacto(x, y, grupo_sprites, grupo_efeitos,
+                        cor=(255, 240, 150), raio_max=12):
     """Flash breve quando um tiro acerta (mas não destrói) um inimigo."""
-    flash = Flash(x, y, (255, 240, 150), raio_max=12, duracao=8)
+    flash = Flash(x, y, cor, raio_max=raio_max, duracao=8)
     grupo_sprites.add(flash)
     grupo_efeitos.add(flash)
+
+
+def criar_flash_forte(x, y, grupo_sprites, grupo_efeitos):
+    """Flash de impacto maior e mais evidente (chefe)."""
+    flash = Flash(x, y, (255, 200, 80), raio_max=26, duracao=12)
+    grupo_sprites.add(flash)
+    grupo_efeitos.add(flash)
+
+
+def criar_particulas_propulsao(x, y, grupo_sprites, grupo_efeitos, turbo=False):
+    """Partícula de propulsão que arrasta atrás do avião."""
+    if turbo:
+        cor = random.choice([(255, 240, 120), (255, 200, 80), (255, 255, 255)])
+        tamanho = random.randint(2, 4)
+        duracao = random.randint(12, 20)
+    else:
+        cor = random.choice([(255, 210, 100), (255, 180, 70)])
+        tamanho = 2
+        duracao = random.randint(10, 16)
+    particula = Particula(
+        x + random.randint(-4, 4), y + random.randint(0, 6),
+        random.uniform(-0.15, 0.15), random.uniform(1.2, 2.4),
+        cor, tamanho=tamanho, duracao=duracao, gravidade=0,
+        formato="circulo",
+    )
+    grupo_sprites.add(particula)
+    grupo_efeitos.add(particula)
 
 
 def criar_particulas_coleta(x, y, cor, grupo_sprites, grupo_efeitos):

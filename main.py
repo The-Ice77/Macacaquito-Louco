@@ -31,13 +31,13 @@ def main():
         sys.exit(1)
 
     import pygame
-    from jogo.settings import LARGURA, ALTURA
+    from jogo.settings import LARGURA, ALTURA, NOME_JOGO
     from jogo.telas.aplicacao import Jogo
 
     try:
         pygame.init()
         tela = pygame.display.set_mode((LARGURA, ALTURA))
-        pygame.display.set_caption("Macacuquito Louco")
+        pygame.display.set_caption(NOME_JOGO)
     except Exception as e:
         print(f"Erro ao iniciar o jogo: {e}")
         pygame.quit()
