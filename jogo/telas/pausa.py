@@ -34,18 +34,18 @@ class Pausa:
         titulo = self.fonte_titulo.render("PAUSA", True, COR_MENU_TITULO)
         pulso = int(200 + 55 * (0.5 + 0.5 * math.sin(self.timer * 0.05)))
         titulo.set_alpha(pulso)
-        tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 90))
+        tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 100))
 
         mouse = pygame.mouse.get_pos()
         self.botoes = []
 
-        self._botao(tela, "CONTINUAR", self.fonte_texto, 245, mouse,
+        self._botao(tela, "CONTINUAR", self.fonte_texto, 290, mouse,
                     "continuar", largura=300, altura=55)
-        self._botao(tela, "REINICIAR", self.fonte_texto, 325, mouse,
+        self._botao(tela, "REINICIAR", self.fonte_texto, 378, mouse,
                     "reiniciar", largura=300, altura=55)
-        self._botao(tela, "OPCOES", self.fonte_texto, 405, mouse, "config",
+        self._botao(tela, "OPCOES", self.fonte_texto, 466, mouse, "config",
                     largura=260, altura=52)
-        self._botao(tela, "SAIR", self.fonte_texto, 482, mouse, "sair",
+        self._botao(tela, "SAIR", self.fonte_texto, 550, mouse, "sair",
                     largura=230, altura=50)
 
         acao_hover = None

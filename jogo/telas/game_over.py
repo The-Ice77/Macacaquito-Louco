@@ -46,9 +46,9 @@ class GameOver:
         # layout uniforme (com ou sem recorde — os botões ficam sempre
         # nas mesmas posições, evitando a sensação de informações
         # empilhadas)
-        self._botao(tela, "REINICIAR", self.fonte_texto, 458, mouse,
+        self._botao(tela, "REINICIAR", self.fonte_texto, 560, mouse,
                     "reiniciar", largura=340, altura=60)
-        self._botao(tela, "SAIR", self.fonte_texto, 528, mouse, "sair",
+        self._botao(tela, "SAIR", self.fonte_texto, 635, mouse, "sair",
                     largura=240, altura=50)
 
         acao_hover = None
@@ -79,9 +79,9 @@ class GameOver:
         sombra.set_alpha(int(pulso * 0.5))
         flut = int(math.sin(self.timer * 0.04) * 3)
         tela.blit(sombra, (LARGURA // 2 - titulo.get_width() // 2 + 4,
-                           60 + flut))
+                           74 + flut))
         tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2,
-                           56 + flut))
+                           70 + flut))
 
     def _desenhar_pontuacao(self, tela):
         # nickname em destaque
@@ -90,14 +90,14 @@ class GameOver:
         sombra_nick = self.fonte_nick.render(self.nick, True,
                                              COR_MENU_SOMBRA)
         tela.blit(sombra_nick,
-                  (LARGURA // 2 - nick_surf.get_width() // 2 + 3, 183))
+                  (LARGURA // 2 - nick_surf.get_width() // 2 + 3, 213))
         tela.blit(nick_surf,
-                  (LARGURA // 2 - nick_surf.get_width() // 2, 180))
+                  (LARGURA // 2 - nick_surf.get_width() // 2, 210))
 
         pontos_texto = self.fonte_texto.render(
             f"SCORE: {self.pontos}", True, COR_MENU_TEXTO)
         tela.blit(pontos_texto,
-                  (LARGURA // 2 - pontos_texto.get_width() // 2, 250))
+                  (LARGURA // 2 - pontos_texto.get_width() // 2, 290))
 
         if self.posicao_ranking is not None:
             self._desenhar_record(tela)
@@ -109,7 +109,7 @@ class GameOver:
         cx = LARGURA // 2
         # painel marrom discreto
         rect_painel = pygame.Rect(0, 0, 460, 82)
-        rect_painel.center = (cx, 326)
+        rect_painel.center = (cx, 410)
         pygame.draw.rect(tela, (50, 34, 20), rect_painel, border_radius=12)
         pygame.draw.rect(tela, COR_BANANA, rect_painel, 2,
                          border_radius=12)
@@ -136,7 +136,7 @@ class GameOver:
         texto = self.fonte_pequena.render(
             "TENTE NOVAMENTE!", True, COR_MENU_TITULO)
         texto.set_alpha(pulso)
-        tela.blit(texto, (LARGURA // 2 - texto.get_width() // 2, 324))
+        tela.blit(texto, (LARGURA // 2 - texto.get_width() // 2, 408))
 
     def _botao(self, tela, texto, fonte, y, mouse, acao,
                largura=300, altura=56):

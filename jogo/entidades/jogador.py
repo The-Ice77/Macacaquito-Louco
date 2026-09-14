@@ -10,8 +10,11 @@ import math
 
 import pygame
 
-from .entidade import Entidade
-from ..settings import LARGURA, ALTURA, COR_JOGADOR, POWERUP_MULT_TURBO
+from .entidade import Entidade, escalar
+from ..settings import (
+    LARGURA, ALTURA, COR_JOGADOR, POWERUP_MULT_TURBO,
+    FATOR_ESCALA_JOGADOR,
+)
 from ..visual.tema import banana_surface
 from ..sons import tocar
 
@@ -120,11 +123,12 @@ def _desenhar_chama(superficie, timer):
 class Jogador(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 5)
-        # imagem transparente; a hitbox (rect) continua 40x40
-        self.image = pygame.Surface((40, 40), pygame.SRCALPHA)
-        self.rect = self.image.get_rect(center=(x, y))
+        # a arte base é desenhada em 40x40 e ampliada suavemente (escala
+        # visual + hitbox proporcionais); a imagem inicial já sai escalada
         self.base_image = pygame.Surface((40, 40), pygame.SRCALPHA)
         _desenhar_aviao(self.base_image, "normal")
+        self.image = escalar(self.base_image, FATOR_ESCALA_JOGADOR)
+        self.rect = self.image.get_rect(center=(x, y))
 
         self.tilt_atual = 0.0
         self.bob_timer = 0
@@ -226,7 +230,10 @@ class Jogador(Entidade):
         nova = pygame.Surface((40, 40), pygame.SRCALPHA)
         nova.blit(rot, (20 - rot.get_width() // 2,
                         20 - rot.get_height() // 2 + osc + bob))
-        self.image = nova
+        # aplica a escala visual (e redimensiona a hitbox de forma proporcional)
+        centro = self.rect.center
+        self.image = escalar(nova, FATOR_ESCALA_JOGADOR)
+        self.rect = self.image.get_rect(center=centro)
 
     def update(self):
         self._aplicar_tremor()
@@ -257,8 +264,8 @@ class Jogador(Entidade):
             self.mover(self.velocidade_atual, 0)
 
         # limites de tela
-        self.rect.x = max(0, min(self.rect.x, LARGURA - 40))
-        self.rect.y = max(0, min(self.rect.y, ALTURA - 40))
+        self.rect.x = max(0, min(self.rect.x, LARGURA - self.rect.width))
+        self.rect.y = max(0, min(self.rect.y, ALTURA - self.rect.height))
 
         direcao_x = 0
         if keys[pygame.K_d]:

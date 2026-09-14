@@ -20,7 +20,7 @@ from ..sons import (
 )
 
 _PASSO_VOLUME = 0.05
-_LARGURA_BARRA = 360
+_LARGURA_BARRA = 480
 _ALTURA_BARRA = 18
 _RAIO_KNOB = 12
 _ESPACO_ITENS = 130
@@ -70,7 +70,7 @@ class Configuracoes:
         for indice, item in enumerate(self.itens):
             self._desenhar_item(tela, indice, item, mouse)
 
-        self._botao(tela, LARGURA // 2, "VOLTAR", self.fonte_texto, 500,
+        self._botao(tela, LARGURA // 2, "VOLTAR", self.fonte_texto, 590,
                     mouse, "voltar", largura=230, altura=52)
 
         acao_hover = None
@@ -84,7 +84,7 @@ class Configuracoes:
 
     def _desenhar_item(self, tela, indice, item, mouse):
         centro = LARGURA // 2
-        y_inicio = 210 + indice * _ESPACO_ITENS
+        y_inicio = 250 + indice * _ESPACO_ITENS
 
         cor_rotulo = (COR_MENU_DESTAQUE if indice == self.indice
                       else COR_MENU_TEXTO)

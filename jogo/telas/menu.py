@@ -50,14 +50,14 @@ class Menu:
         self.botoes = []
 
         # botões (placa de madeira), hover animado com ícone
-        self._botao(tela, "JOGAR", self.fonte_texto, 256, mouse, "iniciar",
+        self._botao(tela, "JOGAR", self.fonte_texto, 280, mouse, "iniciar",
                     largura=320, altura=62, simbolo=SIMBOLOS["iniciar"])
-        self._botao(tela, "RANKING", self.fonte_texto, 344, mouse,
+        self._botao(tela, "RANKING", self.fonte_texto, 368, mouse,
                     "ranking", largura=260, altura=56,
                     simbolo=SIMBOLOS["ranking"])
-        self._botao(tela, "OPCOES", self.fonte_texto, 430, mouse, "config",
+        self._botao(tela, "OPCOES", self.fonte_texto, 456, mouse, "config",
                     largura=260, altura=56, simbolo=SIMBOLOS["config"])
-        self._botao(tela, "SAIR", self.fonte_texto, 512, mouse, "sair",
+        self._botao(tela, "SAIR", self.fonte_texto, 540, mouse, "sair",
                     largura=230, altura=50, simbolo=SIMBOLOS["sair"])
 
         acao_hover = None
@@ -72,10 +72,10 @@ class Menu:
         # controles (dica), em texto discreto
         controles = "W A S D - Mover    |    ESPACO - Atirar"
         rotulo = self.fonte_pequena.render(controles, True, COR_MENU_TEXTO)
-        tela.blit(rotulo, (LARGURA // 2 - rotulo.get_width() // 2, 570))
+        tela.blit(rotulo, (LARGURA // 2 - rotulo.get_width() // 2, 650))
 
         # macaco com pequenas animações na lateral (segue o mouse com os olhos)
-        desenhar_macaco(tela, 96, 516, self.timer, olhar_x=mouse[0])
+        desenhar_macaco(tela, 96, 600, self.timer, olhar_x=mouse[0])
 
         # título por último (elemento de maior destaque)
         self._desenhar_titulo(tela)
@@ -95,7 +95,7 @@ class Menu:
         sombra_op = self.fonte_operacao.render(
             "OPERAÇÃO", True, COR_MENU_SOMBRA)
         x_op = LARGURA // 2 - operacao.get_width() // 2
-        y_op = 60 + flut_op - desloca
+        y_op = 66 + flut_op - desloca
         sombra_op.set_alpha(alvo_alpha)
         operacao.set_alpha(int(alvo_alpha * 0.9))
         tela.blit(sombra_op, (x_op + 2, y_op + 2))
@@ -109,7 +109,7 @@ class Menu:
         brilho_b.set_alpha(int(18 + 32 * pulso))
 
         x_b = LARGURA // 2 - banana.get_width() // 2
-        y_b = 102 + flut_ban - desloca
+        y_b = 112 + flut_ban - desloca
         tela.blit(sombra_b, (x_b + 4, y_b + 4))
         tela.blit(brilho_b, (x_b, y_b))
         tela.blit(banana, (x_b, y_b))

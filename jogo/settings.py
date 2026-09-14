@@ -1,11 +1,22 @@
 """
 Configurações e constantes globais do jogo.
 """
-LARGURA = 800
-ALTURA = 600
+LARGURA = 1280
+ALTURA = 720
 FPS = 60
 
 NOME_JOGO = "OPERAÇÃO BANANA"
+
+# Fator visual de escala das entidades (desenho e hitbox proporcionais).
+# A arte base é desenhada em uma grade pequena e ampliada suavemente,
+# preservando os detalhes. 2.2 = 120% maiores que o padrão antigo (x1.0).
+FATOR_ESCALA_JOGADOR = 2.2
+FATOR_ESCALA_INIMIGO = 2.0
+
+# Escala de power-ups e projéteis (mantém a proporção com as naves maiores).
+FATOR_ESCALA_POWERUP = 1.7
+FATOR_ESCALA_PROJETIL = 1.8
+FATOR_ESCALA_EXPLOSAO = 1.3          # explosões são visuais dos projéteis
 
 # Margem de remoção de projéteis fora da tela
 MARGEM_SAIDA_PROJETIL = 40
@@ -122,7 +133,7 @@ COR_EXPLOSAO_BOMBA_BOSS = (255, 0, 0)
 INTERVALO_BOMBA_BOSS = 160
 
 # A bomba explode ao atingir a base (region where the player navigates)
-LINHA_EXPLOSAO_BOMBA = 520
+LINHA_EXPLOSAO_BOMBA = 620
 
 # Cores para menus
 COR_MENU_FUNDO = (10, 10, 30)
@@ -138,6 +149,8 @@ COR_GAME_OVER = (255, 0, 0)
 # Bananas (identidade do jogo)
 COR_BANANA = (250, 225, 70)
 COR_BANANA_PONTA = (130, 96, 30)
+COR_BANANA_POLPA = (252, 236, 132)   # polpa clara da banana descascada
+COR_BANANA_NOVA = (255, 200, 40)     # banana dourada dos power-ups
 
 # ============================================================
 # Menu: selva tropical (folhas, cipós, madeira)
@@ -206,3 +219,15 @@ COR_POWERUP_EXPLOSIVA = (255, 140, 0)
 COR_POWERUP_CORACAO = (255, 80, 120)
 COR_POWERUP_ESTRELA = (255, 255, 100)
 COR_POWERUP_SIMBOLO = (30, 30, 30)
+
+# Frutas dos power-ups (família de frutas: cada efeito vira uma fruta)
+COR_MORANGO = (232, 60, 74)         # turbo (velocidade)
+COR_MORANGO_ESC = (150, 30, 44)
+COR_ABACAXI = (255, 168, 50)        # mega tiro (explosivo)
+COR_ABACAXI_ESC = (184, 102, 28)
+COR_MELANCIA_CASCA = (82, 152, 68)  # escudo (fruta protetora)
+COR_MELANCIA_CASCA_ESC = (46, 98, 54)
+COR_MELANCIA_POLPA = (240, 84, 94)
+COR_MACA = (222, 54, 78)            # coração de vida
+COR_MACA_ESC = (140, 26, 46)
+COR_FRUTA_SEMENTE = (118, 72, 34)

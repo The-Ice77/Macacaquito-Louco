@@ -4,6 +4,20 @@ Classe base para todos os objetos do jogo (jogador, tiros, robôs).
 import pygame
 
 
+def escalar(superficie, fator):
+    """Redimensiona a superfície mantendo a proporção (desenho + arte)."""
+    largura = max(1, int(superficie.get_width() * fator))
+    altura = max(1, int(superficie.get_height() * fator))
+    return pygame.transform.smoothscale(superficie, (largura, altura))
+
+
+def redimensionar(superficie, largura, altura):
+    """Redimensiona a superfície para um tamanho exato."""
+    largura = max(1, int(largura))
+    altura = max(1, int(altura))
+    return pygame.transform.smoothscale(superficie, (largura, altura))
+
+
 class Entidade(pygame.sprite.Sprite):
     def __init__(self, x, y, velocidade):
         super().__init__()
