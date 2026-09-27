@@ -77,6 +77,12 @@ Apenas constantes globais. Não tem funções, mas concentra todo o
 **balanceamento** do jogo em um só lugar:
 
 - **Tela:** `LARGURA = 1280`, `ALTURA = 720`, `FPS = 60`.
+- **Ritmo do jogo:** `FATOR_VELOCIDADE = 1.5` — multiplicador global aplicado a
+  todas as velocidades (jogador, inimigos, projéteis, power-ups e rolagem do
+  cenário). Existe porque a tela cresceu de `800x600` para `1280x720` sem que
+  as velocidades fossem ajustadas: como elas são medidas em pixels por frame,
+  tudo passou a levar mais tempo para atravessar a tela e o jogo "parecia
+  lento". É o único lugar para regular a velocidade geral do jogo.
 - **Escala visual:** `FATOR_ESCALA_JOGADOR = 2.2`, `FATOR_ESCALA_INIMIGO = 2.0`,
   `FATOR_ESCALA_POWERUP = 1.7`, `FATOR_ESCALA_PROJETIL = 1.8`,
   `FATOR_ESCALA_EXPLOSAO = 1.3`. A arte é desenhada pequena e ampliada com
@@ -133,13 +139,22 @@ expõe funções simples para tocar.
 ## 5. jogo/ranking.py — ranking local
 
 Salva o top 10 de pontuações em `ranking.json` (na raiz do projeto).
+**Cada nickname ocupa uma única posição**, com a sua melhor pontuação.
 
-- `carregar_ranking()` — lê o arquivo, ignora entradas inválidas, ordena do
-  maior para o menor e devolve até 10 itens. Arquivo ausente/corrompido
-  retorna lista vazia.
+- `normalizar_nick(nick)` — chave de comparação do nome (ignora espaços
+  extras e maiúsculas, para "macaco" e " MACACO " serem o mesmo jogador).
+- `manter_melhor_por_nick(entradas)` — descarta nomes repetidos, mantendo a
+  maior pontuação de cada um.
+- `carregar_ranking()` — lê o arquivo, ignora entradas inválidas, junta os
+  nomes repetidos, ordena do maior para o menor e devolve até 10 itens.
+  Arquivo ausente/corrompido retorna lista vazia.
 - `salvar_ranking(entradas)` — ordena, limita a 10 e grava em JSON.
-- `adicionar_pontuacao(nick, score)` — insere uma pontuação, ordena e salva.
-  Retorna a **posição** (1 a 10) se entrou no ranking, ou `None`.
+- `adicionar_pontuacao(nick, score)` — insere ou atualiza a pontuação:
+  - nickname novo → entra no ranking;
+  - nickname já existente → **só substitui a pontuação antiga se a nova for
+    maior** (caso contrário não grava nada);
+  - ordena, salva e retorna a **posição** (1 a 10) quando a entrada entrou ou
+    melhorou, ou `None` quando não superou o próprio recorde.
 
 ---
 
@@ -186,8 +201,8 @@ Classe `Jogador(Entidade)`:
   ESCUDO).
 - `_atualizar_visual(direcao_x, movendo)` — inclina, balança e anima o avião
   (só visual, não mexe na hitbox).
-- `update()` — decrementa os timers dos efeitos, lê as teclas (WASD), move o
-  jogador, limita à tela e atualiza o visual.
+- `update()` — decrementa os timers dos efeitos, lê as teclas (WASD **ou as
+  setas** do teclado), move o jogador, limita à tela e atualiza o visual.
 
 ### 6.3 `inimigo.py` — forças policiais
 
@@ -394,8 +409,9 @@ Classe `Menu`:
   título animado (`_desenhar_titulo`, com slide e fade).
 - `_botao(...)` — cria o botão de madeira e guarda `(rect, ação)` para o
   clique.
-- `tratar_evento(event)` — mouse (clique em botão) ou teclado (ENTER = iniciar,
-  ESC = sair). Devolve a ação para o `Jogo` decidir.
+- `tratar_evento(event)` — mouse (clique em botão) ou teclado: setas/WASD
+  movem o destaque e ENTER/ESPAÇO confirmam o item selecionado, ESC = sair.
+  Devolve a ação para o `Jogo` decidir.
 
 ### 7.3 `nickname.py` — cadastro do nickname
 
@@ -418,7 +434,8 @@ Classe `Pausa`:
 
 - `desenhar(tela)` — escurece a tela congelada (camada SRCALPHA) e desenha os
   botões CONTINUAR / REINICIAR / OPÇOES / SAIR.
-- `tratar_evento(event)` — clique ou ESC (continua).
+- `tratar_evento(event)` — clique, setas/WASD + ENTER/ESPAÇO (item
+  selecionado) ou ESC (continua).
 
 ### 7.5 `config.py` — opções (volume)
 
@@ -432,7 +449,9 @@ Classe `Configuracoes`:
 - `_desenhar_item` / `_desenhar_barra` — barra estilo trilho de madeira com
   preenchimento banana e knob, clicável.
 - `tratar_evento(event)` — mouse no trilho/knob para definir o volume;
-  teclado: setas W/S para trocar item, A/D para diminuir/aumentar.
+  teclado: cima/baixo (setas ou W/S) percorrem as barras de volume e o botão
+  VOLTAR, esquerda/direita (setas ou A/D) mudam o volume, ENTER/ESPAÇO
+  confirmam VOLTAR.
 - `_ajustar_por_barra(indice, x_mouse)` — calcula o volume conforme o x do
   clique.
 - `_ajustar(indice, delta)` — muda o volume em passos de `_PASSO_VOLUME`.
@@ -447,7 +466,8 @@ Classe `GameOver` (recebe `pontos`, `nick`, `posicao_ranking`):
 - `_desenhar_record` — painel "NEW HIGH SCORE!" + `POSITION #N` quando o
   jogador entrou no top 10.
 - `_desenhar_frase_motivacional` — "TENTE NOVAMENTE!" caso contrário.
-- `tratar_evento(event)` — ENTER reinicia, ESC sai.
+- `tratar_evento(event)` — setas/WASD + ENTER/ESPAÇO (item selecionado),
+  ESC sai.
 
 ### 7.7 `ranking.py` (tela)
 
@@ -458,7 +478,7 @@ Classe `Ranking` (recebe opcional `destaque_nick`/`destaque_score`):
 - `_desenhar_lista` / `_desenhar_linha` — linhas posição / nick / pontuação;
   a linha do jogador recém-inserido fica **destacada** com fundo banana e
   "NOVO!".
-- `tratar_evento(event)` — clique ou ESC para voltar.
+- `tratar_evento(event)` — clique, ENTER/ESPAÇO ou ESC para voltar.
 
 ### 7.8 `vitoria.py` — tela de vitória
 
@@ -472,7 +492,29 @@ Classe `Vitoria` (recebe `pontos`, `inimigos_derrotados`, `vidas`):
   (reutiliza `_desenhar_aviao`/`_desenhar_helice` do jogador), macacos
   celebrando, painel de resultados (pontuação / inimigos / vidas) e botões
   JOGAR NOVAMENTE / MENU PRINCIPAL.
-- `tratar_evento(event)` — ENTER reinicia, ESC volta ao menu.
+- `tratar_evento(event)` — setas/WASD + ENTER/ESPAÇO (item selecionado),
+  ESC volta ao menu. Antes do `timer` chegar em 48 os botões ainda não
+  existem, então nenhuma tecla é aceita nesse trecho.
+
+### 7.9 `navegacao.py` — seleção de menu pelo teclado
+
+Classe `Navegacao` (usada por herança pelas telas de menu):
+
+- `_iniciar_navegacao(acao_inicial)` — define o item que começa destacado.
+- `_esta_selecionado(acao)` — diz se o botão sendo desenhado é o selecionado
+  (o `_botao` de cada tela soma isso ao `hover`, reaproveitando o mesmo destaque
+  visual do mouse).
+- `_mover_selecao(delta)` — anda a seleção uma posição, dando a volta na
+  lista de botões do último frame.
+- `_sincronizar_mouse(mouse)` — o mouse só assume a seleção quando ele
+  realmente se move; assim um mouse parado não desfaz a navegação do
+  teclado.
+- `_navegar_teclado(event)` — traduz as teclas: cima/baixo movem,
+  ENTER/ESPAÇO devolvem a ação selecionada.
+
+As constantes `TECLA_CIMA`, `TECLA_BAIXO` e `TECLA_CONFIRMAR` ficam neste
+módulo e são reaproveitadas pela tela de opções, que tem navegação própria
+(barras de volume) e só importa os atalhos.
 
 ---
 

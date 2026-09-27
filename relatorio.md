@@ -21,7 +21,7 @@
 - Partículas animadas no fundo (80 pontos flutuantes)
 - Macaco desenhado com desenho próprio (olhos, orelhas, sorriso)
 - Botões em estilo madeira/selva com símbolos (▶, ×)
-- Instruções de controles (WASD + ESPAÇO) na parte inferior
+- Instruções de controles (WASD/setas + ESPAÇO) na parte inferior
 - Texto "Pressione ENTER para jogar" com efeito de blink
 - Efeito de partículas celebração do macaco
 
@@ -190,7 +190,7 @@ Efeitos visuais: anel pulsante, flutuação suave, partículas na coleta.
 
 **Configurações:** barras de volume clicáveis (Volume Geral / Efeitos Sonoros), seletor por teclado.
 
-**Ranking:** top 10 pontuações salvas em `ranking.json`, seleção circular entre REINICIAR e MENU.
+**Ranking:** top 10 pontuações salvas em `ranking.json`, seleção circular entre REINICIAR e MENU. Cada nickname ocupa uma única posição (ver Etapa 21).
 
 **Vitória (OPERAÇÃO CONCLUÍDA!):** tela comemorativa ao derrotar o Chefe Final, com:
 - Título com brilho e fade-in
@@ -269,6 +269,118 @@ Todos os elementos passaram a ser desenhados com formas geométricas detalhadas 
 
 ---
 
+### Etapa 20 — Ritmo do Jogo (multiplicador global de velocidade)
+**Arquivos:** `jogo/settings.py`, `jogo/entidades/*`, `jogo/visual/bg_fase.py`, `jogo/telas/aplicacao.py`
+
+Na etapa anterior a resolução foi aumentada, mas as velocidades ficaram
+intactas. Como elas são medidas em **pixels por frame**, o mesmo valor
+passou a percorrer uma tela 1,2x (vertical) a 1,6x (horizontal) maior, e o
+jogo ficou com aparência de lentidão (relatado por quem jogou).
+
+- **`FATOR_VELOCIDADE = 1.5`** em `settings.py`: multiplicador global aplicado
+  a todas as velocidades, com as entidades agora grandes o bastante para que
+  o ritmo visual volte ao da resolução anterior
+
+| Velocidade | Antes (px/frame) | Agora (px/frame) |
+|------------|------------------|------------------|
+| Jogador | 5 | 7,5 (turbo: 11,25) |
+| Banana do jogador | 10 | 15 |
+| Guarda | 3 | 4,5 |
+| Helicóptero | 2 | 3 |
+| Viatura rápida | 9 | 13,5 |
+| Guarda pesado | 1 | 1,5 |
+| Chefe (fase 1 / fase 2) | 3 / 5 | 4,5 / 7,5 |
+| Bala do guarda | 9 | 13,5 |
+| Míssil do helicóptero / chefe | 6 | 9 |
+| Rajada da viatura | 11 | 16,5 |
+| Bomba (guarda pesado / chefe) | 3 / 2 | 4,5 / 3 |
+| Leque do chefe | 8 | 12 |
+| Queda dos power-ups | 2 | 3 |
+| Rolagem do cenário | 1,6 | 2,4 |
+
+- Também acompanhados: entrada do jogador na tela, entrada dramática do chefe,
+  perseguição lateral dos inimigos, descida da viatura rápida e o aumento de
+  velocidade do chefe na fase 2
+- **Tempos de travessia de tela** ficaram iguais ou melhores que os da versão
+  `800x600` (ex.: guarda 200 → 160 frames, viatura 89 → 95 frames,
+  bala do guarda 27 → 27 frames)
+- **Cadências não foram alteradas** (intervalos de spawn e de tiro), para não
+  aumentar a densidade de inimigos junto com a velocidade
+
+---
+
+### Etapa 21 — Ranking: uma posição por nickname
+**Arquivos:** `jogo/ranking.py`
+
+Antes, cada partida colocava uma linha nova no ranking, então o mesmo jogador
+ocupava várias posições (o `ranking.json` local chegou a ter o mesmo nick 6
+vezes, sobrando poucas posições para os outros jogadores).
+
+- `adicionar_pontuacao(nick, score)` agora **atualiza** a pontuação do
+  nickname em vez de criar uma linha nova
+- A pontuação anterior **só é substituída quando a nova for maior**; se o
+  jogador não superou o próprio recorde, nada é gravado
+- `carregar_ranking()` agrupa as entradas por nickname e mantém a melhor de
+  cada um (antes de aplicar o corte do top 10), o que também limpa
+  automaticamente os arquivos com nomes repetidos
+- `normalizar_nick(nick)` ignora espaços extras e maiúsculas ao comparar os
+  nomes, para "macaco" e "MACACO" serem reconhecidos como o mesmo jogador
+- `adicionar_pontuacao` devolve `None` quando não superou o próprio recorde:
+  a tela de Game Over não anuncia "POSITION #N" nesse caso, mas continua
+  avisando quando o jogador entra ou melhora sua posição
+
+---
+
+### Etapa 22 — Movimento com as Setas do Teclado
+**Arquivos:** `jogo/entidades/jogador.py`, `jogo/telas/menu.py`
+
+O relatório já documentava `W / ↑`, `A / ←`, `S / ↓` e `D / →`, mas apenas a
+tela de configurações aceitava as duas formas — na partida só o WASD
+funcionava.
+
+- `Jogador.update()` passou a ler cada direção em dois conjuntos de teclas
+  (WASD e setas), usando variáveis `cima`, `baixo`, `esquerda` e `direita`
+  para não repetir a checagem no movimento, na inclinação visual e na animação
+- Nenhuma outra mudança: a velocidade, a hitbox e a inclinação continuam
+  iguais, então as setas são apenas um controle adicional
+- Dica da tela inicial ajustada para "W A S D ou SETAS - Mover"
+
+---
+
+### Etapa 23 — Menus navegáveis pelo teclado
+**Arquivos:** `jogo/telas/navegacao.py` (novo), `menu.py`, `pausa.py`,
+`game_over.py`, `vitoria.py`, `ranking.py`, `config.py`
+
+Só a tela de opções aceitava setas/WASD. Nos outros menus o teclado só
+funcionava para ENTER e ESC, então quem não usava mouse dependia de adivinhar
+o que cada ENTER faria — e no menu principal, na pausa e na vitória não dava
+nem para escolher a opção.
+
+- Novo módulo `navegacao.py` com a classe `Navegacao`, usada por herança pelas
+  telas: guarda a ação selecionada, move o destaque em ciclo, confirma com
+  ENTER/ESPAÇO e cede o destaque para o mouse
+- O botão selecionado **acende igual ao hover do mouse** (escala, folhas
+  balançando, banana girando e ícone), reaproveitando o destaque que já
+  existia — nenhum visual novo
+- **Teclado e mouse não se atropelam:** o mouse só assume a seleção quando
+  ele realmente se move, então um mouse parado em cima de um botão não
+  desfaz a navegação feita pelas setas
+- ENTER agora confirma **o item destacado** em todos os menus. O primeiro item
+  é o de sempre (JOGAR, CONTINUAR, REINICIAR), então o comportamento
+  anterior continua valendo para quem aperta ENTER sem mexer nas setas
+- ESC, BACKSPACE e o mouse continuam com o comportamento de antes
+- Tela de opções: a navegação por cima/baixo agora inclui o botão VOLTAR no
+  mesmo ciclo (antes ele só era acessível pelo mouse), e as setas laterais
+  sobre o VOLTAR não alteram nada
+- Dicas de controle nas telas de menu e de pausa
+
+**Correção junto:** em `vitoria.py` e `ranking.py` a lista `self.botoes` não
+era limpa a cada quadro, então crescia a cada frame (2 botões por frame na
+vitória, 1 no ranking). Além de vazar memória, fazia o teste de mouse varrer
+uma lista cada vez maior. Agora é reconstruída por frame.
+
+---
+
 ## Estrutura Final do Projeto
 
 ```
@@ -317,7 +429,8 @@ Macacaquito-Louco/
     │   ├── config.py
     │   ├── game_over.py
     │   ├── ranking.py
-    │   └── vitoria.py
+    │   ├── vitoria.py
+    │   └── navegacao.py
     │
     └── visual/
         ├── bg_fase.py
@@ -331,12 +444,14 @@ Macacaquito-Louco/
 
 | Tecla | Ação |
 |-------|------|
-| W / ↑ | Mover para cima |
-| A / ← | Mover para esquerda |
-| S / ↓ | Mover para baixo |
-| D / → | Mover para direita |
+| W / ↑ | Mover para cima (na partida) |
+| A / ← | Mover para esquerda (na partida) |
+| S / ↓ | Mover para baixo (na partida) |
+| D / → | Mover para direita (na partida) |
 | ESPAÇO | Atirar (segurar para rajada) |
-| ENTER | Confirmar / Selecionar |
+| ↑ ↓ (ou W / S) | Navegar entre os itens dos menus |
+| ← → (ou A / D) | Diminuir / aumentar o volume nas opções |
+| ENTER (ou ESPAÇO) | Confirmar o item selecionado |
 | ESC | Pausar (durante jogo) / Voltar (nos menus) |
 
 ---
@@ -370,10 +485,14 @@ Macacaquito-Louco/
 - [x] Reorganização em subpacotes
 - [x] Telas extras (nickname, pausa, config, ranking, vitória)
 - [x] Ranking local
+- [x] Ranking com uma posição por nickname
+- [x] Controle alternativo com as setas do teclado
+- [x] Menus navegáveis pelo teclado
 - [x] Polimento visual completo
 - [x] Rebalanceamento e fluxo de vitória
 - [x] Redesenho visual das entidades (sprites geométricas)
 - [x] Aumento de resolução e escala das entidades
+- [x] Ajuste do ritmo de velocidade do jogo
 - [ ] Sistema de ondas
 
 ---
@@ -383,6 +502,7 @@ Macacaquito-Louco/
 - Pygame Community Edition (pygame-ce) 2.5.8
 - Python 3.14.7
 - Resolução 1280x720 (16:9), com entidades ampliadas por fatores de escala
+- Velocidades em px/frame multiplicadas por `FATOR_VELOCIDADE`, para compensar o aumento de resolução
 - Sistema de estados simples (sem máquinas de estados complexas)
 - Tratamento de erros para evitar crashes
 - Reset completo ao reiniciar o jogo

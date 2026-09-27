@@ -82,6 +82,10 @@ A estrutura principal do projeto é:
         jogo/telas/config.py
             Menu de configurações (opções), por enquanto controle de volume.
 
+        jogo/telas/navegacao.py
+            Seleção de item de menu por teclado (setas/WASD), usada pelas
+            telas de menu.
+
     jogo/visual/
         Elementos visuais reutilizados (fundo, temas de menu, efeitos).
 
@@ -181,7 +185,7 @@ Não apagar funcionalidades existentes apenas para simplificar a implementação
 O jogo atualmente possui:
 
 - jogador controlável (macaco em avião de bananas);
-- movimentação WASD;
+- movimentação WASD ou setas do teclado;
 - disparo com Espaço (bananas);
 - inimigos: Guarda, Helicóptero Policial, Viatura Rápida, Guarda Pesado, Chefe Final;
 - projéteis (jogador e inimigos);

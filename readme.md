@@ -26,13 +26,15 @@ O jogo possui uma proposta simples e arcade, com foco em ação rápida, esquiva
 
 | Tecla | Ação |
 |---|---|
-| `W` | Mover para cima |
-| `A` | Mover para a esquerda |
-| `S` | Mover para baixo |
-| `D` | Mover para a direita |
+| `W` / `↑` | Mover para cima |
+| `A` / `←` | Mover para a esquerda |
+| `S` / `↓` | Mover para baixo |
+| `D` / `→` | Mover para a direita |
 | `SPACE` | Atirar (segurar para rajada) |
 | `ESC` | Pausar (durante a partida) |
 | `ENTER` | Confirmar / Selecionar |
+| `↑` `↓` | Navegar nos menus (também vale `W` / `S`) |
+| `←` `→` | Ajustar volume nas opções (também vale `A` / `D`) |
 
 ---
 
