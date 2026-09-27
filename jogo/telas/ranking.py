@@ -15,9 +15,10 @@ from ..settings import (
 from ..visual.tema import desenhar_moldura_selva, desenhar_botao_selva
 from ..sons import tocar
 from ..ranking import carregar_ranking, MAX_RANKING
+from .navegacao import Navegacao
 
 
-class Ranking:
+class Ranking(Navegacao):
     def __init__(self, destaque_nick=None, destaque_score=None):
         self.destaque_nick = destaque_nick
         self.destaque_score = destaque_score
@@ -29,6 +30,7 @@ class Ranking:
 
         self.timer = 0
         self.botoes = []
+        self._iniciar_navegacao("voltar")
         self.hover_anterior = None
 
     def atualizar(self):
@@ -117,6 +119,7 @@ class Ranking:
 
     def _desenhar_voltar(self, tela):
         mouse = pygame.mouse.get_pos()
+        self.botoes = []
         self._botao(tela, "VOLTAR", self.fonte_pequena, ALTURA - 60, mouse,
                     "voltar", largura=200, altura=46)
 
@@ -128,12 +131,14 @@ class Ranking:
         if acao_hover is not None and acao_hover != self.hover_anterior:
             tocar("menu_hover")
         self.hover_anterior = acao_hover
+        self._sincronizar_mouse(mouse)
 
     def _botao(self, tela, texto, fonte, y, mouse, acao,
                largura=300, altura=56):
         rect = pygame.Rect(0, 0, largura, altura)
         rect.center = (LARGURA // 2, y)
-        hover = rect.collidepoint(mouse)
+        hover = (rect.collidepoint(mouse)
+                 or self._esta_selecionado(acao))
         desenhar_botao_selva(
             tela, LARGURA // 2, y, largura, altura, texto,
             fonte, self.timer, hover)
@@ -146,6 +151,10 @@ class Ranking:
                     tocar("menu_voltar")
                     return "voltar"
         if event.type == pygame.KEYDOWN:
+            acao = self._navegar_teclado(event)
+            if acao is not None:
+                tocar("menu_voltar")
+                return acao
             if event.key == pygame.K_ESCAPE:
                 tocar("menu_voltar")
                 return "voltar"

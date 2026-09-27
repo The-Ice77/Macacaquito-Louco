@@ -15,9 +15,10 @@ from ..settings import (
 )
 from ..visual.tema import desenhar_moldura_selva, desenhar_botao_selva
 from ..sons import tocar
+from .navegacao import Navegacao
 
 
-class GameOver:
+class GameOver(Navegacao):
     def __init__(self, pontos, nick="MACACO", posicao_ranking=None):
         self.pontos = pontos
         self.nick = nick
@@ -32,6 +33,7 @@ class GameOver:
         self.timer = 0
         self.botoes = []     # (rect, acao) desenhados no último frame
         self.hover_anterior = None
+        self._iniciar_navegacao("reiniciar")
 
     def atualizar(self):
         self.timer += 1
@@ -59,6 +61,7 @@ class GameOver:
         if acao_hover is not None and acao_hover != self.hover_anterior:
             tocar("menu_hover")
         self.hover_anterior = acao_hover
+        self._sincronizar_mouse(mouse)
 
         self._desenhar_titulo(tela)
         self._desenhar_pontuacao(tela)
@@ -142,7 +145,8 @@ class GameOver:
                largura=300, altura=56):
         rect = pygame.Rect(0, 0, largura, altura)
         rect.center = (LARGURA // 2, y)
-        hover = rect.collidepoint(mouse)
+        hover = (rect.collidepoint(mouse)
+                 or self._esta_selecionado(acao))
         desenhar_botao_selva(
             tela, LARGURA // 2, y, largura, altura, texto,
             fonte, self.timer, hover)
@@ -154,8 +158,9 @@ class GameOver:
                 if rect.collidepoint(event.pos):
                     return acao
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                return "reiniciar"
+            acao = self._navegar_teclado(event)
+            if acao is not None:
+                return acao
             if event.key == pygame.K_ESCAPE:
                 return "sair"
         return None

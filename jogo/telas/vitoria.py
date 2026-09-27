@@ -22,9 +22,10 @@ from ..visual.tema import (
 )
 from ..entidades.jogador import _desenhar_aviao, _desenhar_helice
 from ..sons import tocar
+from .navegacao import Navegacao
 
 
-class Vitoria:
+class Vitoria(Navegacao):
     def __init__(self, pontos, inimigos_derrotados, vidas):
         self.pontos = pontos
         self.inimigos_derrotados = inimigos_derrotados
@@ -38,6 +39,7 @@ class Vitoria:
 
         self.timer = 0
         self.botoes = []     # (rect, acao) desenhados no último frame
+        self._iniciar_navegacao("reiniciar")
         self.hover_anterior = None
 
         # comemoração: confetes e bananas caindo nas laterais
@@ -233,6 +235,7 @@ class Vitoria:
 
     def _desenhar_botoes(self, tela):
         mouse = pygame.mouse.get_pos()
+        self.botoes = []
         if self.timer >= 48:
             self._botao(tela, "JOGAR NOVAMENTE", self.fonte_botao, 578,
                         mouse, "reiniciar", largura=360, altura=60)
@@ -247,12 +250,14 @@ class Vitoria:
         if acao_hover is not None and acao_hover != self.hover_anterior:
             tocar("menu_hover")
         self.hover_anterior = acao_hover
+        self._sincronizar_mouse(mouse)
 
     def _botao(self, tela, texto, fonte, y, mouse, acao,
                largura=300, altura=56):
         rect = pygame.Rect(0, 0, largura, altura)
         rect.center = (LARGURA // 2, y)
-        hover = rect.collidepoint(mouse)
+        hover = (rect.collidepoint(mouse)
+                 or self._esta_selecionado(acao))
         desenhar_botao_selva(
             tela, LARGURA // 2, y, largura, altura, texto,
             fonte, self.timer, hover)
@@ -264,8 +269,9 @@ class Vitoria:
                 if rect.collidepoint(event.pos):
                     return acao
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                return "reiniciar"
+            acao = self._navegar_teclado(event)
+            if acao is not None:
+                return acao
             if event.key == pygame.K_ESCAPE:
                 return "menu"
         return None

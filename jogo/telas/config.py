@@ -18,6 +18,7 @@ from ..sons import (
     tocar, volume_mestre, set_volume_mestre,
     volume_efeitos, set_volume_efeitos,
 )
+from .navegacao import TECLA_CIMA, TECLA_BAIXO, TECLA_CONFIRMAR
 
 _PASSO_VOLUME = 0.05
 _LARGURA_BARRA = 480
@@ -49,8 +50,17 @@ class Configuracoes:
         self.timer = 0
         self.botoes = []          # (rect, acao) desenhados no último frame
         self.hover_anterior = None
-        self.indice = 0           # item selecionado pelo teclado
+        # a seleção do teclado passa pelas barras de volume e só depois
+        # chega no botão VOLTAR (que fica depois de todas elas)
+        self.indice = 0
         self.retorno = "menu"     # estado para onde voltar ao sair
+
+    @property
+    def _indice_voltar(self):
+        return len(self.itens)
+
+    def _no_botao_voltar(self):
+        return self.indice == self._indice_voltar
 
     def atualizar(self):
         self.timer += 1
@@ -142,6 +152,8 @@ class Configuracoes:
         rect = pygame.Rect(0, 0, largura, altura)
         rect.center = (x, y)
         hover = rect.collidepoint(mouse)
+        if acao == "voltar":
+            hover = hover or self._no_botao_voltar()
         desenhar_botao_selva(
             tela, x, y, largura, altura, texto, fonte, self.timer, hover)
         self.botoes.append((rect, acao))
@@ -160,17 +172,26 @@ class Configuracoes:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 return "voltar"
-            if event.key in (pygame.K_UP, pygame.K_w):
-                self.indice = (self.indice - 1) % len(self.itens)
+            if event.key in TECLA_CIMA:
+                self.indice = (self.indice - 1) % (len(self.itens) + 1)
                 tocar("menu_hover")
-            elif event.key in (pygame.K_DOWN, pygame.K_s):
-                self.indice = (self.indice + 1) % len(self.itens)
+            elif event.key in TECLA_BAIXO:
+                self.indice = (self.indice + 1) % (len(self.itens) + 1)
                 tocar("menu_hover")
             elif event.key in (pygame.K_LEFT, pygame.K_a):
-                self._ajustar(self.indice, -_PASSO_VOLUME)
+                self._ajustar_selecionado(-_PASSO_VOLUME)
             elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                self._ajustar(self.indice, _PASSO_VOLUME)
+                self._ajustar_selecionado(_PASSO_VOLUME)
+            elif event.key in TECLA_CONFIRMAR and self._no_botao_voltar():
+                return "voltar"
         return None
+
+    def _ajustar_selecionado(self, delta):
+        """Aplica o passo nas barras de volume (VOLTAR não tem volume)."""
+        if self._no_botao_voltar():
+            tocar("menu_hover")
+            return
+        self._ajustar(self.indice, delta)
 
     def _ajustar_por_barra(self, indice, x_mouse):
         """Define o volume conforme a posição do clique na barra."""

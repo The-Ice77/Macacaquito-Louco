@@ -5,6 +5,8 @@ O protagonista é um macaco pilotando um avião feito de banana. O desenho é
 feito por frame com formas do Pygame, permitindo pequenas animações:
 inclinação em voo, hélice girando, chama de propulsão e reações do macaco.
 A hitbox permanece em um retângulo simples (40x40) fixo.
+
+Movimento: WASD ou as setas do teclado.
 """
 import math
 
@@ -254,13 +256,19 @@ class Jogador(Entidade):
 
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w]:
+        # cada direção aceita o WASD e também a seta correspondente
+        cima = keys[pygame.K_w] or keys[pygame.K_UP]
+        baixo = keys[pygame.K_s] or keys[pygame.K_DOWN]
+        esquerda = keys[pygame.K_a] or keys[pygame.K_LEFT]
+        direita = keys[pygame.K_d] or keys[pygame.K_RIGHT]
+
+        if cima:
             self.mover(0, -self.velocidade_atual)
-        if keys[pygame.K_s]:
+        if baixo:
             self.mover(0, self.velocidade_atual)
-        if keys[pygame.K_a]:
+        if esquerda:
             self.mover(-self.velocidade_atual, 0)
-        if keys[pygame.K_d]:
+        if direita:
             self.mover(self.velocidade_atual, 0)
 
         # limites de tela
@@ -268,10 +276,9 @@ class Jogador(Entidade):
         self.rect.y = max(0, min(self.rect.y, ALTURA - self.rect.height))
 
         direcao_x = 0
-        if keys[pygame.K_d]:
+        if direita:
             direcao_x = 1
-        elif keys[pygame.K_a]:
+        elif esquerda:
             direcao_x = -1
-        movendo = (keys[pygame.K_w] or keys[pygame.K_s] or
-                   keys[pygame.K_a] or keys[pygame.K_d])
+        movendo = cima or baixo or esquerda or direita
         self._atualizar_visual(direcao_x, movendo)

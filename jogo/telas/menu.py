@@ -18,6 +18,7 @@ from ..visual.tema import (
     banana_surface,
 )
 from ..sons import tocar
+from .navegacao import Navegacao
 
 
 SIMBOLOS = {
@@ -28,7 +29,7 @@ SIMBOLOS = {
 }
 
 
-class Menu:
+class Menu(Navegacao):
     def __init__(self):
         self.fonte_operacao = pygame.font.SysFont(None, 40)
         self.fonte_banana = pygame.font.SysFont(None, 96)
@@ -38,6 +39,7 @@ class Menu:
         self.timer = 0
         self.botoes = []     # (rect, acao) desenhados no último frame
         self.hover_anterior = None
+        self._iniciar_navegacao("iniciar")
 
     def atualizar(self):
         self.timer += 1
@@ -68,9 +70,11 @@ class Menu:
         if acao_hover is not None and acao_hover != self.hover_anterior:
             tocar("menu_hover")
         self.hover_anterior = acao_hover
+        self._sincronizar_mouse(mouse)
 
         # controles (dica), em texto discreto
-        controles = "W A S D - Mover    |    ESPACO - Atirar"
+        controles = ("W A S D ou SETAS - Mover    |    ESPACO - Atirar"
+                     "    |    SETAS + ENTER - Menus")
         rotulo = self.fonte_pequena.render(controles, True, COR_MENU_TEXTO)
         tela.blit(rotulo, (LARGURA // 2 - rotulo.get_width() // 2, 650))
 
@@ -131,7 +135,8 @@ class Menu:
                largura=300, altura=56, simbolo=None):
         rect = pygame.Rect(0, 0, largura, altura)
         rect.center = (LARGURA // 2, y)
-        hover = rect.collidepoint(mouse)
+        hover = (rect.collidepoint(mouse)
+                 or self._esta_selecionado(acao))
         desenhar_botao_selva(
             tela, LARGURA // 2, y, largura, altura, texto,
             fonte, self.timer, hover, simbolo=simbolo)
@@ -143,8 +148,9 @@ class Menu:
                 if rect.collidepoint(event.pos):
                     return acao
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                return "iniciar"
+            acao = self._navegar_teclado(event)
+            if acao is not None:
+                return acao
             if event.key == pygame.K_ESCAPE:
                 return "sair"
         return None

@@ -8,19 +8,22 @@ import math
 
 import pygame
 
-from ..settings import LARGURA, ALTURA, COR_MENU_TITULO
+from ..settings import LARGURA, ALTURA, COR_MENU_TITULO, COR_MENU_TEXTO
 from ..visual.tema import desenhar_botao_selva
 from ..sons import tocar
+from .navegacao import Navegacao
 
 
-class Pausa:
+class Pausa(Navegacao):
     def __init__(self):
         self.fonte_titulo = pygame.font.SysFont(None, 70)
         self.fonte_texto = pygame.font.SysFont(None, 32)
+        self.fonte_dica = pygame.font.SysFont(None, 24)
 
         self.timer = 0
         self.botoes = []     # (rect, acao) desenhados no último frame
         self.hover_anterior = None
+        self._iniciar_navegacao("continuar")
 
     def atualizar(self):
         self.timer += 1
@@ -56,12 +59,19 @@ class Pausa:
         if acao_hover is not None and acao_hover != self.hover_anterior:
             tocar("menu_hover")
         self.hover_anterior = acao_hover
+        self._sincronizar_mouse(mouse)
+
+        dica = "SETAS ou W A S D - Navegar    |    ENTER - Confirmar"
+        texto = self.fonte_dica.render(dica, True, COR_MENU_TEXTO)
+        texto.set_alpha(150)
+        tela.blit(texto, (LARGURA // 2 - texto.get_width() // 2, 620))
 
     def _botao(self, tela, texto, fonte, y, mouse, acao,
                largura=300, altura=56):
         rect = pygame.Rect(0, 0, largura, altura)
         rect.center = (LARGURA // 2, y)
-        hover = rect.collidepoint(mouse)
+        hover = (rect.collidepoint(mouse)
+                 or self._esta_selecionado(acao))
         desenhar_botao_selva(
             tela, LARGURA // 2, y, largura, altura, texto,
             fonte, self.timer, hover)
@@ -73,6 +83,9 @@ class Pausa:
                 if rect.collidepoint(event.pos):
                     return acao
         if event.type == pygame.KEYDOWN:
+            acao = self._navegar_teclado(event)
+            if acao is not None:
+                return acao
             if event.key == pygame.K_ESCAPE:
                 return "continuar"
         return None
