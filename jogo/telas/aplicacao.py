@@ -7,7 +7,7 @@ import pygame
 
 from ..settings import (
     LARGURA, ALTURA, FPS, NOME_JOGO, VITORIA_TRANSICAO, COR_TEXTO,
-    COR_ESCUDO, COR_JOGADOR, FATOR_ESCALA_JOGADOR,
+    COR_ESCUDO, COR_JOGADOR, FATOR_ESCALA_JOGADOR, VELOCIDADE_ENTRADA,
     SPAWN_INTERVALO_INICIAL, SPAWN_INTERVALO_MINIMO,
     PONTOS_DESBLOQUEIA_HELICOPTERO, PONTOS_DESBLOQUEIA_GUARDAPESADO,
     PONTOS_DESBLOQUEIA_CHEFE,
@@ -656,7 +656,8 @@ class Jogo:
         # jogador sobe de baixo para a posição de voo
         alvo_y = ALTURA - 60
         if self.jogador.rect.y > alvo_y:
-            self.jogador.rect.y = max(alvo_y, self.jogador.rect.y - 7)
+            self.jogador.rect.y = max(
+                alvo_y, self.jogador.rect.y - VELOCIDADE_ENTRADA)
         self.jogador.rect.x = LARGURA // 2 - self.jogador.rect.width // 2
         self.background.atualizar(0.25)
         self.background.desenhar(self.tela)

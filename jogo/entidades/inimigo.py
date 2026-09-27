@@ -15,6 +15,9 @@ from ..settings import (
     COR_GUARDA, COR_HELICOPTERO, COR_VIATURA,
     COR_GUARDAPESADO, COR_CHEFE, COR_CHEFE_FASE2,
     FATOR_ESCALA_INIMIGO,
+    VEL_PERSEGUICAO_X, VEL_PERSEGUICAO_X_HELICOPTERO,
+    VELOCIDADE_DESCIDA_VIATURA,
+    VELOCIDADE_ENTRADA_CHEFE, AUMENTO_VELOCIDADE_CHEFE_FASE2,
     VIDA_GUARDA, PONTOS_GUARDA, VELOCIDADE_GUARDA,
     VIDA_HELICOPTERO, PONTOS_HELICOPTERO, VELOCIDADE_HELICOPTERO,
     VIDA_VIATURA, PONTOS_VIATURA, VELOCIDADE_VIATURA,
@@ -153,9 +156,9 @@ class Guarda(Inimigo):
         self.rect.x += math.sin(self.timer * 0.08) * 0.5
         if self.jogador is not None:
             if self.rect.centerx < self.jogador.rect.centerx:
-                self.rect.x += 1
+                self.rect.x += VEL_PERSEGUICAO_X
             elif self.rect.centerx > self.jogador.rect.centerx:
-                self.rect.x -= 1
+                self.rect.x -= VEL_PERSEGUICAO_X
 
     def _desenhar(self):
         """Viatura policial vista de cima: frente virada para baixo."""
@@ -231,9 +234,9 @@ class HelicopteroPolicial(Inimigo):
         self.rect.y += self.velocidade
         if self.jogador is not None:
             if self.rect.centerx < self.jogador.rect.centerx:
-                self.rect.x += 2
+                self.rect.x += VEL_PERSEGUICAO_X_HELICOPTERO
             elif self.rect.centerx > self.jogador.rect.centerx:
-                self.rect.x -= 2
+                self.rect.x -= VEL_PERSEGUICAO_X_HELICOPTERO
         self.rect.x = max(0, min(self.rect.x, LARGURA - self.rect.width))
 
     def _desenhar(self):
@@ -348,7 +351,8 @@ class ViaturaRapida(Inimigo):
     def _movimentar(self):
         self.rect.x += self.velocidade_x
         # leve balanço vertical enquanto avança (sensação de velocidade)
-        self.rect.y += 1 + math.sin(self.timer * 0.12) * 0.5
+        self.rect.y += (VELOCIDADE_DESCIDA_VIATURA +
+                        math.sin(self.timer * 0.12) * 0.5)
 
     def _desenhar(self):
         """Aeronave de persecução alongada, com o bico apontando para a direita."""
@@ -435,9 +439,9 @@ class GuardaPesado(Inimigo):
         self.rect.y += math.sin(self.timer * 0.06) * 0.5
         if self.jogador is not None:
             if self.rect.centerx < self.jogador.rect.centerx:
-                self.rect.x += 1
+                self.rect.x += VEL_PERSEGUICAO_X
             elif self.rect.centerx > self.jogador.rect.centerx:
-                self.rect.x -= 1
+                self.rect.x -= VEL_PERSEGUICAO_X
 
     def _desenhar(self):
         """Blindado pesado: esteiras largas, placas de armadura e canhão."""
@@ -657,7 +661,7 @@ class ChefeFinal(Inimigo):
     def entrar_fase2(self):
         if not self.esta_na_fase2:
             self.esta_na_fase2 = True
-            self.velocidade = self.velocidade + 2
+            self.velocidade = self.velocidade + AUMENTO_VELOCIDADE_CHEFE_FASE2
             self.intervalo_tiro = 35
             self._desenhar()
             self.image = escalar(self.image, FATOR_ESCALA_INIMIGO)
@@ -749,7 +753,7 @@ class ChefeFinal(Inimigo):
                 self.rect.centery = 70
                 self.timer_entrada = 0
             else:
-                self.rect.y += 4
+                self.rect.y += VELOCIDADE_ENTRADA_CHEFE
             self._aplicar_tremor()
             return
 

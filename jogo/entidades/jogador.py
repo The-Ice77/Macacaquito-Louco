@@ -13,7 +13,7 @@ import pygame
 from .entidade import Entidade, escalar
 from ..settings import (
     LARGURA, ALTURA, COR_JOGADOR, POWERUP_MULT_TURBO,
-    FATOR_ESCALA_JOGADOR,
+    FATOR_ESCALA_JOGADOR, VELOCIDADE_JOGADOR,
 )
 from ..visual.tema import banana_surface
 from ..sons import tocar
@@ -122,7 +122,7 @@ def _desenhar_chama(superficie, timer):
 
 class Jogador(Entidade):
     def __init__(self, x, y):
-        super().__init__(x, y, 5)
+        super().__init__(x, y, VELOCIDADE_JOGADOR)
         # a arte base é desenhada em 40x40 e ampliada suavemente (escala
         # visual + hitbox proporcionais); a imagem inicial já sai escalada
         self.base_image = pygame.Surface((40, 40), pygame.SRCALPHA)

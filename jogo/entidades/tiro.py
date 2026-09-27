@@ -12,7 +12,7 @@ import pygame
 from .entidade import Entidade, escalar, redimensionar
 from ..settings import (
     ALTURA, LARGURA, MARGEM_SAIDA_PROJETIL,
-    FATOR_ESCALA_PROJETIL, FATOR_ESCALA_EXPLOSAO,
+    FATOR_ESCALA_PROJETIL, FATOR_ESCALA_EXPLOSAO, VEL_TIRO_JOGADOR,
     COR_BANANA, COR_BANANA_POLPA, COR_PROJETIL_INIMIGO,
 )
 from ..visual.tema import banana_surface
@@ -165,7 +165,7 @@ class TiroJogador(Tiro):
     """
 
     def __init__(self, x, y, cor=COR_BANANA, tamanho=12, dano=1, brilho=False):
-        super().__init__(x, y, 0, -10, cor=cor, tamanho=tamanho)
+        super().__init__(x, y, 0, -VEL_TIRO_JOGADOR, cor=cor, tamanho=tamanho)
         self.dano = dano
         if cor is None:
             cor = COR_BANANA

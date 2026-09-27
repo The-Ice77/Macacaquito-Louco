@@ -18,6 +18,36 @@ FATOR_ESCALA_POWERUP = 1.7
 FATOR_ESCALA_PROJETIL = 1.8
 FATOR_ESCALA_EXPLOSAO = 1.3          # explosões são visuais dos projéteis
 
+# ============================================================
+# Ritmo do jogo (multiplicador global de velocidade)
+# ============================================================
+# A tela passou de 800x600 para 1280x720 e as entidades foram ampliadas
+# (FATOR_ESCALA_*). Como as velocidades são medidas em pixels por frame,
+# tudo passou a levar bem mais tempo para atravessar a tela e o jogo
+# "parecia lento". Todas as velocidades do jogo são multiplicadas por
+# este fator para devolver o ritmo da resolução anterior.
+# É o único lugar para ajustar a velocidade geral do jogo.
+FATOR_VELOCIDADE = 1.5
+
+# ============================================================
+# Velocidades do jogador
+# ============================================================
+VELOCIDADE_JOGADOR = 5 * FATOR_VELOCIDADE
+VEL_TIRO_JOGADOR = 10 * FATOR_VELOCIDADE
+# Velocidade de entrada do avião na tela (animação de abertura da fase)
+VELOCIDADE_ENTRADA = 7 * FATOR_VELOCIDADE
+# Rolagem do cenário (px por frame com o jogador parado)
+VELOCIDADE_FUNDO = round(1.6 * FATOR_VELOCIDADE, 2)
+
+# Acompanhamento lateral do jogador (px por frame)
+VEL_PERSEGUICAO_X = 1 * FATOR_VELOCIDADE              # guarda e guarda pesado
+VEL_PERSEGUICAO_X_HELICOPTERO = 2 * FATOR_VELOCIDADE
+# Deslocamento para baixo da viatura rápida enquanto atravessa a tela
+VELOCIDADE_DESCIDA_VIATURA = 1 * FATOR_VELOCIDADE
+# Entrada dramática do chefe e ganho de velocidade na fase 2
+VELOCIDADE_ENTRADA_CHEFE = 4 * FATOR_VELOCIDADE
+AUMENTO_VELOCIDADE_CHEFE_FASE2 = 2 * FATOR_VELOCIDADE
+
 # Margem de remoção de projéteis fora da tela
 MARGEM_SAIDA_PROJETIL = 40
 
@@ -44,23 +74,23 @@ COR_PROJETIL_FORTE = (255, 60, 60)    # vermelho (projéteis fortes)
 # ============================================================
 VIDA_GUARDA = 1
 PONTOS_GUARDA = 10
-VELOCIDADE_GUARDA = 3
+VELOCIDADE_GUARDA = 3 * FATOR_VELOCIDADE
 
 VIDA_HELICOPTERO = 3
 PONTOS_HELICOPTERO = 25
-VELOCIDADE_HELICOPTERO = 2
+VELOCIDADE_HELICOPTERO = 2 * FATOR_VELOCIDADE
 
 VIDA_VIATURA = 1
 PONTOS_VIATURA = 15
-VELOCIDADE_VIATURA = 9
+VELOCIDADE_VIATURA = 9 * FATOR_VELOCIDADE
 
 VIDA_GUARDAPESADO = 8
 PONTOS_GUARDAPESADO = 80
-VELOCIDADE_GUARDAPESADO = 1
+VELOCIDADE_GUARDAPESADO = 1 * FATOR_VELOCIDADE
 
 VIDA_CHEFE = 80
 PONTOS_CHEFE = 200
-VELOCIDADE_CHEFE = 3
+VELOCIDADE_CHEFE = 3 * FATOR_VELOCIDADE
 # Limiares de pontuação (rebalanceáveis):
 # o intervalo de spawn é o tempo entre aparições (em frames, 60 = 1s):
 # quanto MAIOR o valor, MAIS lento é o surgimento de inimigos.
@@ -81,12 +111,12 @@ VITORIA_TRANSICAO = 55
 # ============================================================
 # Guarda -> bala simples (pequena, rápida, reta para baixo)
 VEL_BALA_TAMANHO = 8
-VEL_BALA = 9
+VEL_BALA = 9 * FATOR_VELOCIDADE
 COR_BALA = (255, 230, 150)
 
 # Helicóptero -> míssil (médio, mirado, pequena explosão)
 VEL_MISSIL_TAMANHO = 14
-VEL_MISSIL = 6
+VEL_MISSIL = 6 * FATOR_VELOCIDADE
 COR_MISSIL = (255, 120, 60)
 PERSECUCAO_HELICOPTERO = 0.04          # correção leve (não persegue perfeito)
 RAIO_EXPLOSAO_MISSIL = 26
@@ -94,7 +124,7 @@ COR_EXPLOSAO_MISSIL = (255, 180, 60)
 
 # Aeronave rápida -> rajada de 2-3 balas muito rápidas
 VEL_RAJADA_TAMANHO = 7
-VEL_RAJADA = 11
+VEL_RAJADA = 11 * FATOR_VELOCIDADE
 COR_RAJADA = (120, 200, 255)
 QTD_RAJADA_VIATURA = 3
 INTERVALO_RAJADA = 8                   # frames entre projéteis da rajada
@@ -102,7 +132,7 @@ FREQ_RAJADA_VIATURA = 50
 
 # Guarda pesado -> bomba explosiva (grande, lenta, grande explosão)
 VEL_BOMBA_TAMANHO = 24
-VEL_BOMBA = 3
+VEL_BOMBA = 3 * FATOR_VELOCIDADE
 COR_BOMBA = (80, 80, 80)
 RAIO_EXPLOSAO_BOMBA = 55
 COR_EXPLOSAO_BOMBA = (255, 120, 0)
@@ -110,7 +140,7 @@ INTERVALO_BOMBA = 110                  # cadência da bomba
 
 # Boss -> míssil especial (fase 1)
 VEL_MISSIL_BOSS_TAMANHO = 16
-VEL_MISSIL_BOSS = 6
+VEL_MISSIL_BOSS = 6 * FATOR_VELOCIDADE
 COR_MISSIL_BOSS = (255, 80, 200)
 PERSECUCAO_BOSS = 0.05
 RAIO_EXPLOSAO_MISSIL_BOSS = 30
@@ -119,14 +149,14 @@ INTERVALO_TIRO_BOSS_FASE1 = 50
 
 # Boss -> leque de 5 projéteis (fase 2)
 VEL_LEQUE_TAMANHO = 9
-VEL_LEQUE = 8
+VEL_LEQUE = 8 * FATOR_VELOCIDADE
 COR_LEQUE = (255, 220, 60)
 QTD_LEQUE_BOSS = 5
 INTERVALO_LEQUE_BOSS = 70
 
 # Boss -> bomba especial (fase 2, muito lenta, explosão maior)
 VEL_BOMBA_BOSS_TAMANHO = 32
-VEL_BOMBA_BOSS = 2
+VEL_BOMBA_BOSS = 2 * FATOR_VELOCIDADE
 COR_BOMBA_BOSS = (40, 40, 40)
 RAIO_EXPLOSAO_BOMBA_BOSS = 80
 COR_EXPLOSAO_BOMBA_BOSS = (255, 0, 0)
@@ -198,7 +228,7 @@ COR_CARRO = [(62, 64, 66), (72, 74, 76), (66, 66, 68)]
 POWERUP_FREQ = 400                 # intervalo base entre spawns (~6,7s)
 POWERUP_FREQ_VARIACAO = 100        # variação aleatória do intervalo
 POWERUP_MAX_NA_TELA = 3            # limite de power-ups simultâneos
-POWERUP_VELOCIDADE = 2             # queda dos power-ups
+POWERUP_VELOCIDADE = 2 * FATOR_VELOCIDADE   # queda dos power-ups
 
 POWERUP_DURACAO_TURBO = 300        # 5s (velocidade)
 POWERUP_DURACAO_TIRO_DUPLO = 420   # 7s (tiro duplo)

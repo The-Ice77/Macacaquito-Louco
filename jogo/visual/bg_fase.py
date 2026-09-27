@@ -13,7 +13,7 @@ import random
 import pygame
 
 from ..settings import (
-    LARGURA, ALTURA,
+    LARGURA, ALTURA, VELOCIDADE_FUNDO,
     COR_CIDADE_FUNDO, COR_RUA, COR_AVENIDA, COR_FAIXA_RUA, COR_ZEBRA,
     COR_PREDIO_1, COR_PREDIO_2, COR_PREDIO_3, COR_PREDIO_4,
     COR_PREDIO_BORDA, COR_PARQUE, COR_PARQUE_BORDA, COR_ARVORE,
@@ -48,7 +48,8 @@ def _escurecer(cor, fator=0.55):
 
 class BackgroundFase:
     def __init__(self):
-        self.vel_base = 1.6          # rolagem em px por frame (jogador parado)
+        # rolagem em px por frame (jogador parado)
+        self.vel_base = VELOCIDADE_FUNDO
         self.offset = 0.0
         self.tile = self._desfocar(self._gerar_tile())
         self.carros = self._gerar_carros()
